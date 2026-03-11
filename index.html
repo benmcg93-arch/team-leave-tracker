@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Leave Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0f1f3d;
+    --navy-mid: #1a3560;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --slate: #64748b;
+    --slate-light: #f1f5f9;
+    --white: #ffffff;
+    --border: #e2e8f0;
+    --today: #fef08a;
+    --weekend: #f8fafc;
+    --weekend-header: #e2e8f0;
+
+    --leave-annual: #bbf7d0;
+    --leave-annual-text: #14532d;
+    --leave-annual-border: #4ade80;
+    --leave-sick: #fecaca;
+    --leave-sick-text: #7f1d1d;
+    --leave-sick-border: #f87171;
+    --leave-public: #fed7aa;
+    --leave-public-text: #7c2d12;
+    --leave-public-border: #fb923c;
+    --leave-other: #e9d5ff;
+    --leave-other-text: #4a1d96;
+    --leave-other-border: #c084fc;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f8fafc;
+    color: var(--navy);
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .tracker-wrap {
+    max-width: 100%;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(15,31,61,0.08);
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--navy);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 16px; }
+
+  .header-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.22); }
+
+  .month-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: white;
+    min-width: 140px;
+    text-align: center;
+  }
+
+  .today-btn {
+    background: var(--blue);
+    border: none;
+    color: white;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .today-btn:hover { opacity: 0.85; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 28px;
+    background: var(--slate-light);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .legend-label { font-size: 12px; font-weight: 500; color: var(--slate); margin-right: 4px; }
+
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: transform 0.1s;
+    user-select: none;
+  }
+  .legend-item:hover { transform: scale(1.04); }
+  .legend-item.active-mode { border-color: var(--navy) !important; }
+
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .li-annual  { background: var(--leave-annual);  color: var(--leave-annual-text);  border-color: var(--leave-annual-border); }
+  .li-sick    { background: var(--leave-sick);    color: var(--leave-sick-text);    border-color: var(--leave-sick-border); }
+  .li-public  { background: var(--leave-public);  color: var(--leave-public-text);  border-color: var(--leave-public-border); }
+  .li-other   { background: var(--leave-other);   color: var(--leave-other-text);   border-color: var(--leave-other-border); }
+
+  .legend-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+  .clear-mode {
+    font-size: 12px; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px;
+    background: white; color: var(--slate);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .clear-mode:hover { transform: scale(1.04); }
+  .clear-mode.active-mode { border-color: var(--navy); color: var(--navy); }
+
+  /* ── Controls bar ── */
+  .controls {
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .add-member-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 7px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    width: 200px;
+    transition: border-color 0.15s;
+  }
+  .add-member-input:focus { border-color: var(--blue); }
+
+  .add-btn {
+    background: var(--navy);
+    color: white;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .add-btn:hover { opacity: 0.85; }
+
+  .controls-hint {
+    font-size: 12px;
+    color: var(--slate);
+    margin-left: auto;
+  }
+
+  /* ── Table ── */
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .col-name { width: 160px; min-width: 140px; }
+  .col-day  { min-width: 32px; }
+
+  /* Header row */
+  thead tr:first-child th {
+    background: var(--navy-mid);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 10px 0;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+
+  thead tr:first-child th.name-col-head {
+    text-align: left;
+    padding-left: 16px;
+    border-right: 2px solid rgba(255,255,255,0.15);
+  }
+
+  thead tr:first-child th.weekend-head {
+    background: #263d6b;
+  }
+
+  thead tr:first-child th.today-head {
+    background: #1d4ed8;
+    color: var(--today);
+  }
+
+  /* Day-of-week sub-header */
+  thead tr:last-child th {
+    background: var(--slate-light);
+    color: var(--slate);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 0;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+  }
+
+  thead tr:last-child th.name-col-head {
+    text-align: left;
+    padding-left: 16px;
+    border-right: 2px solid var(--border);
+  }
+
+  thead tr:last-child th.weekend-dow { background: var(--weekend-header); color: #94a3b8; }
+  thead tr:last-child th.today-dow   { background: #dbeafe; color: #1d4ed8; font-weight: 700; }
+
+  /* Body rows */
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:hover td { background-color: rgba(37,99,235,0.03); }
+  tbody tr:hover td.weekend-cell { background-color: rgba(37,99,235,0.03); }
+
+  td {
+    padding: 0;
+    border-right: 1px solid var(--border);
+    vertical-align: middle;
+    height: 36px;
+  }
+
+  td.name-td {
+    padding: 0 12px 0 16px;
+    border-right: 2px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 36px;
+  }
+
+  .delete-row {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+  tbody tr:hover .delete-row { opacity: 0.6; }
+  .delete-row:hover { opacity: 1 !important; }
+
+  td.day-cell {
+    text-align: center;
+    cursor: pointer;
+    transition: filter 0.1s;
+    position: relative;
+  }
+  td.day-cell:hover { filter: brightness(0.92); }
+
+  td.weekend-cell { background: var(--weekend); }
+  td.today-cell   { background: var(--today) !important; }
+
+  td.leave-annual { background: var(--leave-annual); }
+  td.leave-sick   { background: var(--leave-sick); }
+  td.leave-public { background: var(--leave-public); }
+  td.leave-other  { background: var(--leave-other); }
+
+  /* Empty state */
+  .empty-row td.name-td { color: #94a3b8; font-style: italic; font-weight: 400; }
+
+  .no-members {
+    text-align: center;
+    padding: 40px;
+    color: var(--slate);
+    font-size: 14px;
+  }
+
+  /* ── Summary bar ── */
+  .summary {
+    padding: 12px 28px;
+    border-top: 1px solid var(--border);
+    background: var(--slate-light);
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--slate);
+    flex-wrap: wrap;
+  }
+  .summary-stat strong { color: var(--navy); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="tracker-wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">Team Leave Tracker</div>
+      <div class="month-nav">
+        <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button>
+        <div class="month-label" id="monthLabel"></div>
+        <button class="nav-btn" onclick="changeMonth(1)">&#8594;</button>
+      </div>
+    </div>
+    <button class="today-btn" onclick="goToToday()">Today</button>
+  </div>
+
+  <!-- Legend / mode picker -->
+  <div class="legend">
+    <span class="legend-label">Click cells to mark:</span>
+    <div class="legend-item li-annual active-mode" onclick="setMode('annual')" id="mode-annual">
+      <div class="legend-dot" style="background:#4ade80"></div> Annual Leave
+    </div>
+    <div class="legend-item li-sick" onclick="setMode('sick')" id="mode-sick">
+      <div class="legend-dot" style="background:#f87171"></div> Sick Leave
+    </div>
+    <div class="legend-item li-public" onclick="setMode('public')" id="mode-public">
+      <div class="legend-dot" style="background:#fb923c"></div> Public Holiday
+    </div>
+    <div class="legend-item li-other" onclick="setMode('other')" id="mode-other">
+      <div class="legend-dot" style="background:#c084fc"></div> Other
+    </div>
+    <div class="legend-sep"></div>
+    <div class="clear-mode" onclick="setMode('clear')" id="mode-clear">✕ Clear</div>
+  </div>
+
+  <!-- Add member bar -->
+  <div class="controls">
+    <input class="add-member-input" id="memberInput" type="text" placeholder="Team member name…" onkeydown="if(event.key==='Enter') addMember()">
+    <button class="add-btn" onclick="addMember()">+ Add Member</button>
+    <span class="controls-hint">Click any cell to mark leave · Right-click to clear</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-scroll">
+    <table id="calTable">
+      <thead>
+        <tr id="headRow"></tr>
+        <tr id="dowRow"></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary" id="summary"></div>
+
+</div>
+
+<script>
+  const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+
+  let currentYear, currentMonth, today;
+  let members = []; // { name, leaves: { 'YYYY-MM-DD': type } }
+  let activeMode = 'annual';
+
+  function init() {
+    today = new Date();
+    currentYear  = today.getFullYear();
+    currentMonth = today.getMonth();
+    render();
+  }
+
+  function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth <  0) { currentMonth = 11; currentYear--; }
+    render();
+  }
+
+  function goToToday() {
+    currentYear  = today.getFullYear();
+    currentMonth = today.getMonth();
+    render();
+  }
+
+  function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+  function dateKey(y, m, d) {
+    return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+
+  function setMode(mode) {
+    activeMode = mode;
+    document.querySelectorAll('.legend-item, .clear-mode').forEach(el => el.classList.remove('active-mode'));
+    document.getElementById('mode-' + mode)?.classList.add('active-mode');
+  }
+
+  function toggleLeave(memberIdx, day) {
+    const key = dateKey(currentYear, currentMonth, day);
+    const m = members[memberIdx];
+    if (activeMode === 'clear') {
+      delete m.leaves[key];
+    } else if (m.leaves[key] === activeMode) {
+      delete m.leaves[key]; // toggle off
+    } else {
+      m.leaves[key] = activeMode;
+    }
+    render();
+  }
+
+  function addMember() {
+    const input = document.getElementById('memberInput');
+    const name = input.value.trim();
+    if (!name) return;
+    members.push({ name, leaves: {} });
+    input.value = '';
+    render();
+    // scroll to bottom of table
+    document.getElementById('tableBody').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function deleteMember(idx) {
+    members.splice(idx, 1);
+    render();
+  }
+
+  function render() {
+    const numDays = daysInMonth(currentYear, currentMonth);
+    const todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+    // Month label
+    document.getElementById('monthLabel').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+
+    // Build header rows
+    const headRow = document.getElementById('headRow');
+    const dowRow  = document.getElementById('dowRow');
+    headRow.innerHTML = '';
+    dowRow.innerHTML  = '';
+
+    // Name column headers
+    const nameTh = document.createElement('th');
+    nameTh.className = 'col-name name-col-head';
+    nameTh.textContent = 'Team Member';
+    headRow.appendChild(nameTh);
+
+    const nameDow = document.createElement('th');
+    nameDow.className = 'col-name name-col-head';
+    nameDow.textContent = '';
+    dowRow.appendChild(nameDow);
+
+    for (let d = 1; d <= numDays; d++) {
+      const date = new Date(currentYear, currentMonth, d);
+      const dow  = date.getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      const key = dateKey(currentYear, currentMonth, d);
+      const isToday = key === todayKey;
+
+      const th = document.createElement('th');
+      th.className = 'col-day' + (isWeekend ? ' weekend-head' : '') + (isToday ? ' today-head' : '');
+      th.textContent = String(d).padStart(2,'0');
+      headRow.appendChild(th);
+
+      const dowTh = document.createElement('th');
+      dowTh.className = (isWeekend ? ' weekend-dow' : '') + (isToday ? ' today-dow' : '');
+      dowTh.textContent = DAYS_SHORT[dow];
+      dowRow.appendChild(dowTh);
+    }
+
+    // Body
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    if (members.length === 0) {
+      const row = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = numDays + 1;
+      td.className = 'no-members';
+      td.textContent = 'No team members yet — add someone above to get started.';
+      row.appendChild(td);
+      tbody.appendChild(row);
+    } else {
+      members.forEach((member, mIdx) => {
+        const row = document.createElement('tr');
+
+        // Name cell
+        const nameTd = document.createElement('td');
+        nameTd.className = 'name-td';
+        nameTd.innerHTML = `<span>${escHtml(member.name)}</span><button class="delete-row" onclick="deleteMember(${mIdx})" title="Remove">✕</button>`;
+        row.appendChild(nameTd);
+
+        // Day cells
+        for (let d = 1; d <= numDays; d++) {
+          const date = new Date(currentYear, currentMonth, d);
+          const dow  = date.getDay();
+          const isWeekend = dow === 0 || dow === 6;
+          const key = dateKey(currentYear, currentMonth, d);
+          const isToday = key === todayKey;
+          const leaveType = member.leaves[key];
+
+          const td = document.createElement('td');
+          let cls = 'day-cell';
+          if (isToday)       cls += ' today-cell';
+          else if (isWeekend) cls += ' weekend-cell';
+          if (leaveType)     cls += ` leave-${leaveType}`;
+          td.className = cls;
+          td.onclick = () => toggleLeave(mIdx, d);
+          td.oncontextmenu = (e) => { e.preventDefault(); const k=dateKey(currentYear,currentMonth,d); delete member.leaves[k]; render(); };
+          row.appendChild(td);
+        }
+
+        tbody.appendChild(row);
+      });
+    }
+
+    // Summary
+    renderSummary(numDays, todayKey);
+  }
+
+  function renderSummary(numDays, todayKey) {
+    let totalLeave = 0;
+    let annualCount = 0, sickCount = 0, publicCount = 0, otherCount = 0;
+    let membersOnLeaveToday = [];
+
+    members.forEach(m => {
+      Object.entries(m.leaves).forEach(([key, type]) => {
+        // only count this month
+        const [y, mo] = key.split('-').map(Number);
+        if (y === currentYear && mo === currentMonth + 1) {
+          totalLeave++;
+          if (type === 'annual') annualCount++;
+          if (type === 'sick')   sickCount++;
+          if (type === 'public') publicCount++;
+          if (type === 'other')  otherCount++;
+        }
+      });
+      if (m.leaves[todayKey]) membersOnLeaveToday.push(m.name);
+    });
+
+    const s = document.getElementById('summary');
+    const isCurrentMonth = currentYear === today.getFullYear() && currentMonth === today.getMonth();
+    s.innerHTML = `
+      <span class="summary-stat"><strong>${members.length}</strong> team members</span>
+      <span class="summary-stat"><strong>${totalLeave}</strong> leave days this month</span>
+      ${annualCount ? `<span class="summary-stat"><strong>${annualCount}</strong> annual</span>` : ''}
+      ${sickCount   ? `<span class="summary-stat"><strong>${sickCount}</strong> sick</span>` : ''}
+      ${publicCount ? `<span class="summary-stat"><strong>${publicCount}</strong> public holiday</span>` : ''}
+      ${otherCount  ? `<span class="summary-stat"><strong>${otherCount}</strong> other</span>` : ''}
+      ${isCurrentMonth && membersOnLeaveToday.length ? `<span class="summary-stat" style="margin-left:auto;color:#dc2626"><strong>${membersOnLeaveToday.length}</strong> on leave today: ${membersOnLeaveToday.join(', ')}</span>` : ''}
+    `;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  init();
+</script>
+</body>
+</html>
