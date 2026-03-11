@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSF Digital | Sprint & Leave Planner — DEMO</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --osf-blue:       #001B5E;
+  --osf-blue-mid:   #002680;
+  --osf-blue-light: #E9F2FF;
+  --osf-green:      #00BE5A;
+  --osf-grey:       #3A4B58;
+  --osf-grey-light: #AAAFB6;
+  --osf-grey-pale:  #F4F6F9;
+  --white:          #FFFFFF;
+  --border:         #DDE3ED;
+  --border-light:   #EEF1F6;
+
+  --text-head:   var(--osf-blue);
+  --text-body:   var(--osf-grey);
+  --text-muted:  var(--osf-grey-light);
+  --surface:     var(--white);
+  --surface-alt: var(--osf-grey-pale);
+
+  --annual-bg:  rgba(0,190,90,0.12);  --annual-text: #006830;  --annual-dot: var(--osf-green);
+  --sick-bg:    rgba(220,53,69,0.10); --sick-text: #8b1a24;    --sick-dot: #dc3545;
+  --public-bg:  rgba(0,27,94,0.08);   --public-text: var(--osf-blue); --public-dot: var(--osf-blue);
+  --other-bg:   rgba(58,75,88,0.10);  --other-text: var(--osf-grey);  --other-dot: var(--osf-grey);
+
+  --we-bg:       #F8F9FB;
+  --today-bg:    rgba(0,190,90,0.08);
+  --today-bdr:   var(--osf-green);
+}
+
+body {
+  font-family: 'Lato', Calibri, sans-serif;
+  background: var(--osf-grey-pale);
+  color: var(--text-body);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+.demo-banner {
+  background: #f59e0b;
+  color: #7c2d12;
+  text-align: center;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.app { display:flex;flex-direction:column;min-height:100vh; }
+
+.topnav {
+  background:var(--osf-blue);
+  padding:0 28px;
+  display:flex;align-items:center;
+  height:56px;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 8px rgba(0,27,94,0.2);
+}
+.nav-logo { display:flex;align-items:center;gap:0;margin-right:36px; }
+.nav-logo .osf { font-size:17px;font-weight:900;color:white;letter-spacing:-0.3px; }
+.nav-logo .sep { width:2px;height:18px;background:white;margin:0 3px;opacity:0.9; }
+.nav-logo .dig { font-size:17px;font-weight:300;color:white; }
+.nav-divider { width:1px;height:22px;background:rgba(255,255,255,0.2);margin-right:28px; }
+.nav-app-name { font-size:13px;font-weight:400;color:rgba(255,255,255,0.7);margin-right:32px;white-space:nowrap; }
+
+.tab-btn { background:none;border:none;color:rgba(255,255,255,0.65);font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;padding:0 16px;height:56px;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;letter-spacing:0.2px; }
+.tab-btn:hover { color:white; }
+.tab-btn.active { color:white;border-bottom-color:var(--osf-green); }
+
+.nav-right { margin-left:auto;display:flex;align-items:center;gap:10px; }
+.save-status { font-size:11px;color:rgba(255,255,255,0.5);min-width:80px;text-align:right;font-weight:400; }
+.save-status.saved{color:var(--osf-green);}
+.icon-btn { background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s; }
+.icon-btn:hover { background:rgba(255,255,255,0.2);color:white; }
+
+.panel { display:none;flex:1;padding:28px; }
+.panel.active { display:block; }
+
+/* ── Calendar ── */
+.cal-toolbar { display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap; }
+.month-nav { display:flex;align-items:center;gap:6px; }
+.nav-btn { background:var(--white);border:1.5px solid var(--border);color:var(--osf-blue);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .12s; }
+.nav-btn:hover { background:var(--osf-blue);color:white;border-color:var(--osf-blue); }
+.month-lbl { font-size:15px;font-weight:700;color:var(--osf-blue);min-width:150px;text-align:center; }
+.today-btn { background:var(--osf-blue);color:white;border:none;padding:7px 16px;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .12s;letter-spacing:0.2px; }
+.today-btn:hover { background:var(--osf-blue-mid); }
+
+.mode-bar { display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap; }
+.mode-lbl { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-right:4px; }
+.chip { display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:all .12s;user-select:none;letter-spacing:0.1px; }
+.chip:hover { transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+.chip.active { box-shadow:0 0 0 2px var(--osf-blue); }
+.chip-annual { background:var(--annual-bg);color:var(--annual-text);border-color:rgba(0,190,90,0.3); }
+.chip-sick   { background:var(--sick-bg);  color:var(--sick-text);  border-color:rgba(220,53,69,0.25); }
+.chip-public { background:var(--public-bg);color:var(--public-text);border-color:rgba(0,27,94,0.2); }
+.chip-other  { background:var(--other-bg); color:var(--other-text); border-color:rgba(58,75,88,0.2); }
+.chip-clear  { background:var(--white);color:var(--text-muted);border:1.5px solid var(--border)!important; }
+.chip-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+
+.add-bar { display:flex;gap:8px;align-items:center;margin-bottom:18px; }
+.member-inp { background:var(--white);border:1.5px solid var(--border);color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;padding:8px 13px;border-radius:6px;outline:none;width:230px;transition:border-color .15s; }
+.member-inp:focus { border-color:var(--osf-blue); }
+.add-btn { background:var(--osf-green);color:white;border:none;padding:8px 18px;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .12s; }
+.add-btn:hover { opacity:.88; }
+.bar-hint { font-size:11px;color:var(--text-muted);margin-left:auto; }
+
+.cal-wrap { overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+table { width:100%;border-collapse:collapse;table-layout:fixed; }
+.col-name{width:170px;} .col-day{min-width:28px;}
+
+thead tr.date-row th { background:var(--osf-blue);color:rgba(255,255,255,0.85);font-size:10px;font-weight:700;padding:9px 2px;text-align:center;border-right:1px solid rgba(255,255,255,0.08);letter-spacing:0.3px; }
+thead tr.date-row th.th-name { text-align:left;padding-left:16px;border-right:2px solid rgba(255,255,255,0.15);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.6); }
+thead tr.date-row th.th-we   { background:#00154a;color:rgba(255,255,255,0.4); }
+thead tr.date-row th.th-today { background:var(--osf-green);color:white; }
+
+thead tr.dow-row th { background:var(--osf-blue-light);color:var(--osf-blue);font-size:9px;font-weight:700;text-transform:uppercase;padding:4px 2px;text-align:center;border-right:1px solid var(--border);border-bottom:2px solid var(--border); }
+thead tr.dow-row th.th-name { text-align:left;padding-left:16px;border-right:2px solid var(--border);color:var(--text-muted); }
+thead tr.dow-row th.th-we   { background:#f0f3f8;color:var(--text-muted); }
+thead tr.dow-row th.th-today { background:rgba(0,190,90,0.1);color:var(--osf-green); }
+
+tbody tr { border-bottom:1px solid var(--border-light); }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:nth-child(even) td:not(.td-we):not(.td-today):not([class*="td-leave"]) { background:#fafbfd; }
+tbody tr:hover { background:var(--osf-blue-light) !important; }
+tbody tr:hover td { background:transparent !important; }
+
+td { height:34px;padding:0;border-right:1px solid var(--border-light);vertical-align:middle; }
+td.td-name { padding:0 10px 0 16px;border-right:2px solid var(--border);font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--osf-blue); }
+.name-inner { display:flex;align-items:center;justify-content:space-between;height:100%; }
+.del-btn { opacity:0;background:none;border:none;color:#dc3545;cursor:pointer;font-size:11px;padding:2px 5px;border-radius:4px;transition:opacity .1s;flex-shrink:0; }
+tbody tr:hover .del-btn { opacity:0.5; }
+.del-btn:hover { opacity:1!important;background:#fdf0f1; }
+
+td.td-day { cursor:pointer;transition:filter .08s; }
+td.td-day:hover { filter:brightness(0.9); }
+td.td-we    { background:var(--we-bg); }
+td.td-today { background:var(--today-bg)!important;border-bottom:2px solid var(--today-bdr); }
+td.td-leave-annual { background:var(--annual-bg); }
+td.td-leave-sick   { background:var(--sick-bg); }
+td.td-leave-public { background:var(--public-bg); }
+td.td-leave-other  { background:var(--other-bg); }
+
+.cal-summary { display:flex;gap:20px;flex-wrap:wrap;padding:11px 18px;background:var(--osf-blue-light);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:12px;color:var(--text-body); }
+.cal-summary strong { color:var(--osf-blue);font-weight:700; }
+
+/* ── Config ── */
+.config-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px; }
+.config-card { background:var(--white);border:1px solid var(--border);border-radius:8px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.config-card h3 { font-size:14px;font-weight:700;color:var(--osf-blue);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--osf-green);display:inline-block; }
+.cf { margin-bottom:16px; }
+.cf label { display:block;font-size:11px;font-weight:700;color:var(--osf-blue);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
+.cf input,.cf select { width:100%;padding:9px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:6px;color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;outline:none;transition:border-color .15s; }
+.cf input:focus,.cf select:focus { border-color:var(--osf-blue); }
+.save-cfg-btn { background:var(--osf-blue);color:white;border:none;padding:10px 22px;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .12s;margin-top:4px; }
+.save-cfg-btn:hover { background:var(--osf-blue-mid); }
+.cfg-ok { font-size:12px;color:var(--osf-green);margin-left:12px;opacity:0;transition:opacity .3s;font-weight:700; }
+.cap-table { width:100%;border-collapse:collapse;margin-top:8px; }
+.cap-table th { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:6px 8px;text-align:left;border-bottom:2px solid var(--border); }
+.cap-table td { padding:6px 8px;border-bottom:1px solid var(--border-light);font-size:13px;height:auto;border-right:none;color:var(--osf-blue);font-weight:700; }
+.cap-inp { width:80px;padding:5px 8px;background:var(--white);border:1.5px solid var(--border);border-radius:5px;color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;outline:none; }
+.cap-inp:focus { border-color:var(--osf-blue); }
+
+/* ── Sprints ── */
+.sprint-hdr { display:flex;align-items:baseline;gap:14px;margin-bottom:22px; }
+.sprint-hdr h2 { font-size:20px;font-weight:900;color:var(--osf-blue); }
+.sprint-meta-lbl { font-size:12px;color:var(--text-muted); }
+.sprints-list { display:flex;flex-direction:column;gap:16px; }
+
+.sprint-card { background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.sprint-card-top { padding:14px 20px;background:var(--osf-blue);border-bottom:3px solid var(--osf-green);display:flex;align-items:center;gap:14px;flex-wrap:wrap; }
+.sprint-num-badge { font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);padding:3px 10px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px; }
+.sprint-date-range { font-size:14px;font-weight:700;color:white; }
+.sprint-date-range span { font-size:12px;color:rgba(255,255,255,0.6);font-weight:400; }
+.sprint-planned-area { margin-left:auto;display:flex;align-items:center;gap:8px; }
+.sprint-planned-lbl { font-size:11px;color:rgba(255,255,255,0.6);font-weight:700;text-transform:uppercase;letter-spacing:0.4px; }
+.sprint-planned-inp { width:80px;padding:5px 9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:5px;color:white;font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;outline:none;text-align:center;transition:border-color .15s; }
+.sprint-planned-inp:focus { border-color:var(--osf-green);background:rgba(255,255,255,0.15); }
+.sprint-unit-lbl { font-size:11px;color:rgba(255,255,255,0.55); }
+
+.sprint-card-body { padding:20px; }
+.cap-overview { display:flex;gap:32px;margin-bottom:18px;flex-wrap:wrap; }
+.cap-stat .val { font-size:26px;font-weight:900;color:var(--osf-blue); }
+.cap-stat .lbl { font-size:11px;color:var(--text-muted);margin-top:2px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px; }
+.cap-stat.green .val{color:#006830;} .cap-stat.amber .val{color:#92580a;} .cap-stat.red .val{color:#8b1a24;}
+
+.cap-bar-area { margin-bottom:18px; }
+.cap-bar-lbls { display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:700; }
+.cap-bar-track { height:6px;background:var(--osf-blue-light);border-radius:99px;overflow:hidden; }
+.cap-bar-fill { height:100%;border-radius:99px;background:var(--osf-green);transition:width .4s ease; }
+.cap-bar-fill.amber{background:#f59e0b;} .cap-bar-fill.red{background:#dc3545;}
+
+.leave-section-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px; }
+.leave-rows { display:flex;flex-direction:column;gap:4px; }
+.leave-row { display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:5px;background:var(--osf-grey-pale);font-size:13px;border-left:3px solid var(--border); }
+.leave-row-name { font-weight:700;color:var(--osf-blue);min-width:150px; }
+.leave-tags { display:flex;gap:5px;flex-wrap:wrap; }
+.leave-tag { font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:0.3px; }
+.tag-annual { background:var(--annual-bg);color:var(--annual-text); }
+.tag-sick   { background:var(--sick-bg);color:var(--sick-text); }
+.tag-public { background:var(--public-bg);color:var(--public-text); }
+.tag-other  { background:var(--other-bg);color:var(--other-text); }
+.leave-row-avail { margin-left:auto;font-size:12px;color:var(--text-muted);font-weight:700; }
+.no-leave { font-size:13px;color:var(--osf-green);padding:6px 0;font-weight:700; }
+
+/* ── Timeline ── */
+.tl-wrap { overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+.tl-table { border-collapse:collapse;table-layout:fixed; }
+.tl-th-name { width:170px; }
+
+.tl-sprint-hdr { background:var(--osf-blue);padding:10px 12px;text-align:left;border-right:3px solid rgba(255,255,255,0.18);vertical-align:top; }
+.tl-sprint-hdr-inner { display:flex;flex-direction:column;gap:5px; }
+.tl-sh-top { display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+.tl-sh-badge { font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px; }
+.tl-sh-range { font-size:13px;font-weight:700;color:white; }
+.tl-sh-days  { font-size:11px;color:rgba(255,255,255,0.45); }
+.tl-sh-stats { font-size:11px;color:rgba(255,255,255,0.6); }
+.tl-stat-red   { color:#fca5a5!important;font-weight:700; }
+.tl-stat-amber { color:#fcd34d!important;font-weight:700; }
+.tl-surplus { font-size:11px;font-weight:700;margin-left:auto; }
+.tl-surplus.pos { color:var(--osf-green); }
+.tl-surplus.neg { color:#f87171; }
+.tl-cap-bar-track { height:4px;background:rgba(255,255,255,0.15);border-radius:99px;overflow:hidden;margin-top:2px; }
+.tl-cap-bar-fill { height:100%;border-radius:99px;background:var(--osf-green); }
+.tl-cap-bar-fill.amber { background:#f59e0b; }
+.tl-cap-bar-fill.red   { background:#dc3545; }
+
+.tl-date-cell { background:var(--osf-blue);color:rgba(255,255,255,0.8);font-size:9px;font-weight:700;padding:5px 1px;text-align:center;border-right:1px solid rgba(255,255,255,0.06);white-space:nowrap; }
+.tl-dow-cell  { background:var(--osf-blue-light);color:var(--osf-blue);font-size:8px;font-weight:700;text-transform:uppercase;padding:3px 1px;text-align:center;border-right:1px solid var(--border);border-bottom:2px solid var(--border); }
+.tl-date-cell.tl-we { background:#00154a;color:rgba(255,255,255,0.3); }
+.tl-dow-cell.tl-we  { background:#f0f3f8;color:var(--text-muted); }
+.tl-date-cell.tl-today-col { background:var(--osf-green);color:white; }
+.tl-dow-cell.tl-today-col  { background:rgba(0,190,90,0.12);color:var(--osf-green); }
+.tl-sprint-boundary { border-left:2px solid var(--border)!important; }
+.tl-date-cell.tl-sprint-boundary { border-left:2px solid rgba(255,255,255,0.25)!important; }
+
+.tl-member-name { padding:0 10px 0 16px;border-right:2px solid var(--border);font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--osf-blue);width:170px; }
+.tl-day-cell { height:32px;border-right:1px solid var(--border-light);cursor:default; }
+.tl-day-cell.tl-we { background:var(--we-bg); }
+.tl-day-cell.tl-today-col { background:var(--today-bg)!important;border-bottom:2px solid var(--today-bdr); }
+.tl-day-cell.tl-sprint-boundary { border-left:2px solid var(--border)!important; }
+tbody tr:hover .tl-day-cell { background:var(--osf-blue-light)!important; }
+tbody tr:hover td.tl-member-name { background:var(--osf-blue-light); }
+
+.tl-footer-lbl { font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;padding:0 10px 0 16px;border-right:2px solid var(--border); }
+.tl-off-cell { height:22px;text-align:center;vertical-align:middle;border-right:1px solid var(--border-light);font-size:9px;font-weight:700;color:#8b1a24; }
+.tl-off-cell.tl-we { background:var(--we-bg); }
+.tl-off-cell.tl-sprint-boundary { border-left:2px solid var(--border)!important; }
+
+.tl-legend { display:flex;gap:16px;flex-wrap:wrap;padding:10px 16px;background:var(--osf-blue-light);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:11px;color:var(--text-body); }
+.tl-legend-item { display:flex;align-items:center;gap:5px; }
+.tl-legend-dot { width:10px;height:10px;border-radius:2px; }
+
+/* ── Footer ── */
+.app-footer { padding:16px 28px;background:var(--osf-blue);display:flex;align-items:center;justify-content:space-between; }
+.footer-brand { display:flex;align-items:center;gap:4px; }
+.footer-brand .osf { font-size:13px;font-weight:900;color:white; }
+.footer-brand .sep { width:1.5px;height:14px;background:white;margin:0 2px;opacity:0.7; }
+.footer-brand .dig { font-size:13px;font-weight:300;color:white; }
+.footer-text { font-size:11px;color:rgba(255,255,255,0.45); }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">⚠ DEMO MODE — All data is local and not saved. This is a preview with dummy data.</div>
+
+<div class="app">
+
+  <div class="topnav">
+    <div class="nav-logo">
+      <span class="osf">OSF</span><span class="sep"></span><span class="dig">DIGITAL</span>
+    </div>
+    <div class="nav-divider"></div>
+    <span class="nav-app-name">Sprint & Leave Planner</span>
+    <button class="tab-btn active" id="tab-leave"   onclick="showTab('leave')">Leave Calendar</button>
+    <button class="tab-btn"        id="tab-sprints" onclick="showTab('sprints')">Sprint Capacity</button>
+    <button class="tab-btn"        id="tab-timeline" onclick="showTab('timeline')">Timeline</button>
+    <button class="tab-btn"        id="tab-config"  onclick="showTab('config')">Configuration</button>
+    <div class="nav-right">
+      <span class="save-status saved" id="saveStatus">✓ Demo</span>
+      <button class="icon-btn" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <!-- Leave Calendar -->
+  <div class="panel active" id="panel-leave">
+    <div class="cal-toolbar">
+      <div class="month-nav">
+        <button class="nav-btn" onclick="changeMonth(-1)">←</button>
+        <div class="month-lbl" id="monthLbl"></div>
+        <button class="nav-btn" onclick="changeMonth(1)">→</button>
+      </div>
+      <button class="today-btn" onclick="goToday()">Today</button>
+    </div>
+    <div class="mode-bar">
+      <span class="mode-lbl">Mark as:</span>
+      <div class="chip chip-annual active" id="chip-annual" onclick="setMode('annual')"><div class="chip-dot" style="background:var(--annual-dot)"></div>Annual Leave</div>
+      <div class="chip chip-sick"   id="chip-sick"   onclick="setMode('sick')"><div class="chip-dot" style="background:var(--sick-dot)"></div>Sick Leave</div>
+      <div class="chip chip-public" id="chip-public" onclick="setMode('public')"><div class="chip-dot" style="background:var(--public-dot)"></div>Public Holiday</div>
+      <div class="chip chip-other"  id="chip-other"  onclick="setMode('other')"><div class="chip-dot" style="background:var(--other-dot)"></div>Other</div>
+      <div class="chip chip-clear"  id="chip-clear"  onclick="setMode('clear')">✕ Clear</div>
+    </div>
+    <div class="add-bar">
+      <input class="member-inp" id="memberInp" placeholder="Add team member…" onkeydown="if(event.key==='Enter')addMember()">
+      <button class="add-btn" onclick="addMember()">+ Add Member</button>
+      <span class="bar-hint">Left-click to mark leave · Right-click to clear</span>
+    </div>
+    <div class="cal-wrap">
+      <table id="calTable">
+        <thead>
+          <tr class="date-row" id="dateRow"></tr>
+          <tr class="dow-row"  id="dowRow"></tr>
+        </thead>
+        <tbody id="calBody"></tbody>
+      </table>
+      <div class="cal-summary" id="calSummary"></div>
+    </div>
+  </div>
+
+  <!-- Sprint Capacity -->
+  <div class="panel" id="panel-sprints">
+    <div class="sprint-hdr">
+      <h2>Sprint Capacity</h2>
+      <span class="sprint-meta-lbl" id="sprintMetaLbl"></span>
+    </div>
+    <div class="sprints-list" id="sprintsList"></div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="panel" id="panel-timeline">
+    <div class="sprint-hdr">
+      <h2>Sprint Timeline</h2>
+      <span class="sprint-meta-lbl" id="tlMetaLbl"></span>
+    </div>
+    <div id="tl-inner"></div>
+  </div>
+
+  <!-- Config -->
+  <div class="panel" id="panel-config">
+    <div class="config-grid">
+      <div class="config-card">
+        <h3>Sprint Settings</h3>
+        <div class="cf"><label>Project / Team Name</label><input type="text" id="cfName" placeholder="e.g. Salesforce Implementation - Phase 1"></div>
+        <div class="cf"><label>Sprint Length (weeks)</label><input type="number" id="cfWeeks" min="1" max="8" value="3"></div>
+        <div class="cf"><label>First Sprint Start Date</label><input type="date" id="cfStart"></div>
+        <div class="cf"><label>Number of Sprints to Show</label><input type="number" id="cfCount" min="1" max="12" value="4"></div>
+        <div class="cf"><label>Capacity Unit</label>
+          <select id="cfUnit">
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+            <option value="points">Story Points</option>
+          </select>
+        </div>
+        <div class="cf"><label>Working Hours per Day</label><input type="number" id="cfHpd" min="1" max="24" value="8"></div>
+        <button class="save-cfg-btn" onclick="saveConfig()">Save Configuration</button>
+        <span class="cfg-ok" id="cfgOk">✓ Saved</span>
+      </div>
+      <div class="config-card">
+        <h3>Per-Member Capacity</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">Override default capacity per person per sprint. Leave blank to use the calculated default based on sprint length and working hours.</p>
+        <table class="cap-table">
+          <thead><tr><th>Team Member</th><th>Capacity / Sprint</th></tr></thead>
+          <tbody id="capBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-footer">
+    <div class="footer-brand">
+      <span class="osf">OSF</span><span class="sep"></span><span class="dig">DIGITAL</span>
+    </div>
+    <span class="footer-text">Sprint & Leave Planner · Internal Tool</span>
+  </div>
+
+</div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ── Dummy Data ──────────────────────────────────────────
+// Sprints start 2026-03-02, 3-week sprints, 4 sprints
+const DUMMY_STATE = {
+  config: {
+    projectName: 'Commerce Cloud — Phase 2',
+    sprintWeeks: 3,
+    sprintStart: '2026-03-02',
+    numSprints: 4,
+    capUnit: 'hours',
+    hoursPerDay: 8
+  },
+  sprint_1_planned: 320,
+  sprint_2_planned: 280,
+  sprint_3_planned: 300,
+  sprint_4_planned: 240,
+  members: [
+    {
+      name: 'Sarah Mitchell',
+      capacity: null,
+      leaves: {
+        // Sprint 1 (Mar 2–20): 2 days annual
+        '2026-03-09': 'annual',
+        '2026-03-10': 'annual',
+        // Sprint 2 (Mar 23–Apr 10): 1 day sick
+        '2026-03-25': 'sick',
+        // Sprint 3 (Apr 13–May 1): 5 days annual (week off)
+        '2026-04-20': 'annual',
+        '2026-04-21': 'annual',
+        '2026-04-22': 'annual',
+        '2026-04-23': 'annual',
+        '2026-04-24': 'annual',
+      }
+    },
+    {
+      name: 'James Okonkwo',
+      capacity: null,
+      leaves: {
+        // Sprint 1: public holiday
+        '2026-03-17': 'public',
+        // Sprint 2: annual
+        '2026-04-06': 'annual',
+        '2026-04-07': 'annual',
+        '2026-04-08': 'annual',
+        '2026-04-09': 'annual',
+        '2026-04-10': 'annual',
+      }
+    },
+    {
+      name: 'Priya Sharma',
+      capacity: null,
+      leaves: {
+        // Sprint 1: sick
+        '2026-03-04': 'sick',
+        '2026-03-05': 'sick',
+        // Sprint 3: annual
+        '2026-04-13': 'annual',
+        '2026-04-14': 'annual',
+        // Sprint 4: annual
+        '2026-05-04': 'annual',
+        '2026-05-05': 'annual',
+        '2026-05-06': 'annual',
+      }
+    },
+    {
+      name: 'Tom Berkowitz',
+      capacity: null,
+      leaves: {
+        // Sprint 2: annual
+        '2026-03-30': 'annual',
+        '2026-03-31': 'annual',
+        // Public holidays
+        '2026-04-03': 'public',
+        '2026-04-06': 'public',
+      }
+    },
+    {
+      name: 'Anika Patel',
+      capacity: null,
+      leaves: {
+        // Sprint 1: other (conference)
+        '2026-03-16': 'other',
+        '2026-03-17': 'other',
+        // Sprint 4: annual
+        '2026-05-11': 'annual',
+        '2026-05-12': 'annual',
+        '2026-05-13': 'annual',
+        '2026-05-14': 'annual',
+        '2026-05-15': 'annual',
+      }
+    },
+    {
+      name: 'Daniel Reeves',
+      capacity: null,
+      leaves: {
+        '2026-03-11': 'annual',
+        '2026-03-12': 'annual',
+        '2026-03-13': 'annual',
+        '2026-04-20': 'sick',
+        '2026-04-21': 'sick',
+      }
+    }
+  ]
+};
+
+let state = JSON.parse(JSON.stringify(DUMMY_STATE));
+let curY, curM, mode = 'annual';
+
+window.onload = () => {
+  const n = new Date(); curY = n.getFullYear(); curM = n.getMonth();
+  populateCfgForm();
+  renderCal();
+};
+
+function showTab(t) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  document.getElementById('panel-' + t).classList.add('active');
+  if (t === 'sprints') renderSprints();
+  if (t === 'timeline') renderTimeline();
+  if (t === 'config') renderCapBody();
+}
+
+function changeMonth(d) { curM += d; if (curM > 11) { curM = 0; curY++; } if (curM < 0) { curM = 11; curY--; } renderCal(); }
+function goToday() { const n = new Date(); curY = n.getFullYear(); curM = n.getMonth(); renderCal(); }
+function setMode(m) { mode = m; document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); document.getElementById('chip-' + m).classList.add('active'); }
+function dk(y, m, d) { return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; }
+function daysIn(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function isWe(y, m, d) { const w = new Date(y, m, d).getDay(); return w === 0 || w === 6; }
+
+function addMember() {
+  const i = document.getElementById('memberInp'); const n = i.value.trim(); if (!n) return;
+  state.members.push({ name: n, leaves: {}, capacity: null }); i.value = ''; renderCal();
+}
+function delMember(i) { if (!confirm(`Remove "${state.members[i].name}"?`)) return; state.members.splice(i, 1); renderCal(); renderCapBody(); }
+function toggleLeave(mi, d) {
+  const k = dk(curY, curM, d), m = state.members[mi];
+  if (mode === 'clear' || m.leaves[k] === mode) { delete m.leaves[k]; } else { m.leaves[k] = mode; }
+  renderCal();
+}
+
+function renderCal() {
+  const now = new Date(), todayKey = dk(now.getFullYear(), now.getMonth(), now.getDate());
+  const nd = daysIn(curY, curM);
+  document.getElementById('monthLbl').textContent = `${MONTHS[curM]} ${curY}`;
+  const dR = document.getElementById('dateRow'), wR = document.getElementById('dowRow');
+  dR.innerHTML = ''; wR.innerHTML = '';
+  dR.appendChild(mTh('Team Member', 'col-name th-name'));
+  wR.appendChild(mTh('', 'col-name th-name'));
+  for (let d = 1; d <= nd; d++) {
+    const key = dk(curY, curM, d), we = isWe(curY, curM, d), isTd = key === todayKey;
+    const dow = new Date(curY, curM, d).getDay();
+    dR.appendChild(mTh(String(d).padStart(2, '0'), 'col-day' + (isTd ? ' th-today' : we ? ' th-we' : '')));
+    wR.appendChild(mTh(DOWS[dow], '' + (isTd ? ' th-today' : we ? ' th-we' : '')));
+  }
+  const tb = document.getElementById('calBody'); tb.innerHTML = '';
+  state.members.forEach((m, mi) => {
+    const tr = document.createElement('tr');
+    const nt = document.createElement('td'); nt.className = 'td-name';
+    nt.innerHTML = `<div class="name-inner"><span>${esc(m.name)}</span><button class="del-btn" onclick="delMember(${mi})">✕</button></div>`;
+    tr.appendChild(nt);
+    for (let d = 1; d <= nd; d++) {
+      const key = dk(curY, curM, d), we = isWe(curY, curM, d), isTd = key === todayKey, lt = m.leaves[key];
+      const td = document.createElement('td'); let cls = 'td-day';
+      if (lt) cls += ` td-leave-${lt}`; else if (isTd) cls += ' td-today'; else if (we) cls += ' td-we';
+      td.className = cls; td.onclick = () => toggleLeave(mi, d);
+      td.oncontextmenu = e => { e.preventDefault(); delete m.leaves[key]; renderCal(); };
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  });
+  let tot = { annual: 0, sick: 0, public: 0, other: 0 }, todayNames = [];
+  state.members.forEach(m => {
+    Object.entries(m.leaves || {}).forEach(([k, t]) => {
+      const [y, mo] = k.split('-').map(Number);
+      if (y === curY && mo === curM + 1) tot[t] = (tot[t] || 0) + 1;
+    });
+    if (m.leaves[todayKey]) todayNames.push(m.name);
+  });
+  const total = Object.values(tot).reduce((a, b) => a + b, 0);
+  const isNow = curY === now.getFullYear() && curM === now.getMonth();
+  document.getElementById('calSummary').innerHTML = `
+    <strong>${state.members.length}</strong> members &nbsp;·&nbsp;
+    <strong>${total}</strong> leave days this month
+    ${tot.annual ? `&nbsp;·&nbsp;<strong>${tot.annual}</strong> annual` : ''}
+    ${tot.sick ? `&nbsp;·&nbsp;<strong>${tot.sick}</strong> sick` : ''}
+    ${tot.public ? `&nbsp;·&nbsp;<strong>${tot.public}</strong> public holiday` : ''}
+    ${tot.other ? `&nbsp;·&nbsp;<strong>${tot.other}</strong> other` : ''}
+    ${isNow && todayNames.length ? `&nbsp;·&nbsp;<span style="color:#8b1a24;font-weight:700">On leave today: ${todayNames.join(', ')}</span>` : ''}
+  `;
+}
+
+function wdBetween(s, e) { let c = 0, d = new Date(s); while (d <= e) { if (d.getDay() !== 0 && d.getDay() !== 6) c++; d.setDate(d.getDate() + 1); } return c; }
+function isWeD(d) { return d.getDay() === 0 || d.getDay() === 6; }
+function getSprintDates() {
+  const c = state.config; if (!c.sprintStart) return [];
+  const sp = []; let s = new Date(c.sprintStart);
+  for (let i = 0; i < (c.numSprints || 4); i++) {
+    const e = new Date(s); e.setDate(e.getDate() + (c.sprintWeeks || 3) * 7 - 1);
+    sp.push({ num: i + 1, start: new Date(s), end: new Date(e) });
+    s.setDate(s.getDate() + (c.sprintWeeks || 3) * 7);
+  }
+  return sp;
+}
+function leaveInSprint(member, ss, se) {
+  const r = { annual: 0, sick: 0, public: 0, other: 0, total: 0 };
+  Object.entries(member.leaves || {}).forEach(([k, t]) => {
+    const [y, m, d] = k.split('-').map(Number); const dt = new Date(y, m - 1, d);
+    if (dt >= ss && dt <= se && !isWeD(dt)) { r[t] = (r[t] || 0) + 1; r.total++; }
+  });
+  return r;
+}
+function defaultCap(wd) { const c = state.config; if (c.capUnit === 'hours') return wd * (c.hoursPerDay || 8); if (c.capUnit === 'days') return wd; return wd * (c.hoursPerDay || 8); }
+
+function renderSprints() {
+  const c = state.config;
+  document.getElementById('sprintMetaLbl').textContent =
+    `${c.projectName || 'Project'} · ${c.sprintWeeks || 3}-week sprints · Capacity in ${c.capUnit || 'hours'}`;
+  const list = document.getElementById('sprintsList'); list.innerHTML = '';
+  const sprints = getSprintDates();
+  sprints.forEach(s => {
+    const wd = wdBetween(s.start, s.end);
+    const baseCap = defaultCap(wd);
+    const planned = state[`sprint_${s.num}_planned`] || 0;
+    const fmt = n => c.capUnit === 'hours' ? `${n}h` : c.capUnit === 'days' ? `${n}d` : `${n}pt`;
+    let totalAvail = 0, totalLeaveImpact = 0;
+    const memberRows = [];
+    state.members.forEach(m => {
+      const lv = leaveInSprint(m, s.start, s.end);
+      const mBase = m.capacity != null ? m.capacity : baseCap;
+      let lvCap = c.capUnit === 'days' ? lv.total : lv.total * (c.hoursPerDay || 8);
+      const avail = Math.max(0, mBase - lvCap);
+      totalAvail += avail; totalLeaveImpact += lvCap;
+      if (lv.total > 0) memberRows.push({ name: m.name, lv, avail });
+    });
+    const pct = planned > 0 ? Math.min(100, Math.round(totalAvail / planned * 100)) : 0;
+    const barCls = pct >= 90 ? 'red' : pct >= 70 ? 'amber' : '';
+    const statCls = planned > 0 ? (totalAvail < planned ? 'red' : totalAvail < planned * 1.1 ? 'amber' : 'green') : '';
+    const surplus = totalAvail - planned;
+    const card = document.createElement('div'); card.className = 'sprint-card';
+    card.innerHTML = `
+      <div class="sprint-card-top">
+        <div class="sprint-num-badge">Sprint ${s.num}</div>
+        <div class="sprint-date-range">${fmtD(s.start)} – ${fmtD(s.end)} <span>· ${wd} working days</span></div>
+        <div class="sprint-planned-area">
+          <span class="sprint-planned-lbl">Planned Work:</span>
+          <input class="sprint-planned-inp" type="number" min="0" value="${planned}" placeholder="0" onchange="setPlanned(${s.num},this.value)">
+          <span class="sprint-unit-lbl">${c.capUnit}</span>
+        </div>
+      </div>
+      <div class="sprint-card-body">
+        <div class="cap-overview">
+          <div class="cap-stat ${statCls}">
+            <div class="val">${fmt(Math.round(totalAvail))}</div>
+            <div class="lbl">Available Capacity</div>
+          </div>
+          ${planned > 0 ? `
+          <div class="cap-stat">
+            <div class="val" style="color:var(--text-muted)">${fmt(planned)}</div>
+            <div class="lbl">Planned Work</div>
+          </div>
+          <div class="cap-stat ${surplus >= 0 ? 'green' : 'red'}">
+            <div class="val">${surplus >= 0 ? '+' : ''}${fmt(Math.round(surplus))}</div>
+            <div class="lbl">${surplus >= 0 ? 'Surplus' : 'Deficit'}</div>
+          </div>` : ''}
+          <div class="cap-stat">
+            <div class="val" style="color:var(--text-muted);font-size:20px">${fmt(Math.round(totalLeaveImpact))}</div>
+            <div class="lbl">Leave Impact</div>
+          </div>
+        </div>
+        ${planned > 0 ? `
+        <div class="cap-bar-area">
+          <div class="cap-bar-lbls"><span>Capacity Utilisation</span><span>${pct}%</span></div>
+          <div class="cap-bar-track"><div class="cap-bar-fill ${barCls}" style="width:${pct}%"></div></div>
+        </div>` : ''}
+        <div class="leave-section-title">Leave in this sprint</div>
+        <div class="leave-rows">
+          ${memberRows.length === 0
+            ? `<div class="no-leave">✓ No leave recorded for this sprint</div>`
+            : memberRows.map(r => `
+              <div class="leave-row">
+                <span class="leave-row-name">${esc(r.name)}</span>
+                <div class="leave-tags">
+                  ${r.lv.annual ? `<span class="leave-tag tag-annual">${r.lv.annual}d Annual</span>` : ''}
+                  ${r.lv.sick ? `<span class="leave-tag tag-sick">${r.lv.sick}d Sick</span>` : ''}
+                  ${r.lv.public ? `<span class="leave-tag tag-public">${r.lv.public}d Public Hol</span>` : ''}
+                  ${r.lv.other ? `<span class="leave-tag tag-other">${r.lv.other}d Other</span>` : ''}
+                </div>
+                <span class="leave-row-avail">${fmt(Math.round(r.avail))} available</span>
+              </div>`).join('')}
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+function setPlanned(n, v) { state[`sprint_${n}_planned`] = parseFloat(v) || 0; setTimeout(renderSprints, 100); }
+
+function populateCfgForm() {
+  const c = state.config || {};
+  document.getElementById('cfName').value = c.projectName || '';
+  document.getElementById('cfWeeks').value = c.sprintWeeks || 3;
+  document.getElementById('cfStart').value = c.sprintStart || '';
+  document.getElementById('cfCount').value = c.numSprints || 4;
+  document.getElementById('cfUnit').value = c.capUnit || 'hours';
+  document.getElementById('cfHpd').value = c.hoursPerDay || 8;
+}
+function saveConfig() {
+  state.config = {
+    projectName: document.getElementById('cfName').value.trim() || '',
+    sprintWeeks: parseInt(document.getElementById('cfWeeks').value) || 3,
+    sprintStart: document.getElementById('cfStart').value || null,
+    numSprints: parseInt(document.getElementById('cfCount').value) || 4,
+    capUnit: document.getElementById('cfUnit').value || 'hours',
+    hoursPerDay: parseInt(document.getElementById('cfHpd').value) || 8,
+  };
+  const el = document.getElementById('cfgOk'); el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 2000);
+}
+function renderCapBody() {
+  const tb = document.getElementById('capBody'); tb.innerHTML = '';
+  if (!state.members.length) { tb.innerHTML = `<tr><td colspan="2" style="color:var(--text-muted);font-size:12px;padding:12px 8px">No members added yet</td></tr>`; return; }
+  state.members.forEach((m, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${esc(m.name)}</td>
+      <td><input class="cap-inp" type="number" min="0" placeholder="default" value="${m.capacity != null ? m.capacity : ''}" onchange="setMCap(${i},this.value)">
+      <span style="font-size:11px;color:var(--text-muted);margin-left:6px">${state.config?.capUnit || 'hrs'}</span></td>`;
+    tb.appendChild(tr);
+  });
+}
+function setMCap(i, v) { state.members[i].capacity = v === '' ? null : parseFloat(v); }
+
+function renderTimeline() {
+  const c = state.config;
+  const sprints = getSprintDates();
+  const inner = document.getElementById('tl-inner');
+  inner.innerHTML = '';
+
+  document.getElementById('tlMetaLbl').textContent =
+    `${c.projectName || 'Project'} · ${c.sprintWeeks || 3}-week sprints · Capacity in ${c.capUnit || 'hours'}`;
+
+  if (!sprints.length) {
+    inner.innerHTML = `<div class="no-sprint-msg">No sprints configured yet.<br>Go to <strong>Configuration</strong> to set a sprint start date.</div>`;
+    return;
+  }
+
+  const now = new Date();
+  const todayKey = dk(now.getFullYear(), now.getMonth(), now.getDate());
+  const fmt = n => c.capUnit === 'hours' ? `${n}h` : c.capUnit === 'days' ? `${n}d` : `${n}pt`;
+
+  // Build full date list and per-sprint capacity metadata
+  const allDates = [];
+  const sprintMeta = [];
+  sprints.forEach(s => {
+    const startIdx = allDates.length;
+    let d = new Date(s.start);
+    while (d <= s.end) { allDates.push(new Date(d)); d.setDate(d.getDate() + 1); }
+    const endIdx = allDates.length - 1;
+    const wd = wdBetween(s.start, s.end);
+    const baseCap = defaultCap(wd);
+    const planned = state[`sprint_${s.num}_planned`] || 0;
+    let totalAvail = 0, totalLeaveImpact = 0;
+    state.members.forEach(m => {
+      const lv = leaveInSprint(m, s.start, s.end);
+      const mBase = m.capacity != null ? m.capacity : baseCap;
+      const lvCap = c.capUnit === 'days' ? lv.total : lv.total * (c.hoursPerDay || 8);
+      totalAvail += Math.max(0, mBase - lvCap);
+      totalLeaveImpact += lvCap;
+    });
+    totalAvail = Math.round(totalAvail); totalLeaveImpact = Math.round(totalLeaveImpact);
+    const pct = planned > 0 ? Math.min(100, Math.round(totalAvail / planned * 100)) : 0;
+    const surplus = totalAvail - planned;
+    const barCls = pct >= 90 ? 'red' : pct >= 70 ? 'amber' : '';
+    const statCls = planned > 0 ? (totalAvail < planned ? 'tl-stat-red' : totalAvail < planned * 1.1 ? 'tl-stat-amber' : '') : '';
+    sprintMeta.push({ sprint: s, startIdx, endIdx, wd, totalAvail, planned, pct, surplus, barCls, statCls, fmt });
+  });
+
+  // Identify sprint-boundary column indices (start of sprint 2+)
+  const boundaryIdx = new Set(sprintMeta.filter(sm => sm.sprint.num > 1).map(sm => sm.startIdx));
+
+  const table = document.createElement('table');
+  table.className = 'tl-table';
+
+  // colgroup for fixed column widths
+  const cg = document.createElement('colgroup');
+  const nameCol = document.createElement('col');
+  nameCol.style.width = '170px';
+  cg.appendChild(nameCol);
+  allDates.forEach(date => {
+    const col = document.createElement('col');
+    col.style.width = isWeD(date) ? '16px' : '26px';
+    col.style.minWidth = isWeD(date) ? '16px' : '26px';
+    cg.appendChild(col);
+  });
+  table.appendChild(cg);
+
+  const thead = document.createElement('thead');
+
+  // Row 1: Sprint header cells (colspan = days in sprint)
+  const r1 = document.createElement('tr');
+  const r1name = document.createElement('th');
+  r1name.className = 'tl-th-name'; r1name.rowSpan = 3;
+  r1.appendChild(r1name);
+  sprintMeta.forEach(sm => {
+    const th = document.createElement('th');
+    th.className = 'tl-sprint-hdr';
+    th.colSpan = sm.endIdx - sm.startIdx + 1;
+    const surplusHtml = sm.planned > 0
+      ? `<span class="tl-surplus ${sm.surplus >= 0 ? 'pos' : 'neg'}">${sm.surplus >= 0 ? '+' : ''}${fmt(sm.surplus)}</span>` : '';
+    th.innerHTML = `
+      <div class="tl-sprint-hdr-inner">
+        <div class="tl-sh-top">
+          <span class="tl-sh-badge">Sprint ${sm.sprint.num}</span>
+          <span class="tl-sh-range">${fmtD(sm.sprint.start)} – ${fmtD(sm.sprint.end)}</span>
+          <span class="tl-sh-days">· ${sm.wd} working days</span>
+          ${surplusHtml}
+        </div>
+        <div class="tl-sh-stats">
+          <span class="${sm.statCls}">${fmt(sm.totalAvail)} available</span>
+          ${sm.planned > 0 ? `&nbsp;·&nbsp; ${fmt(sm.planned)} planned &nbsp;·&nbsp; ${sm.pct}% utilisation` : ''}
+        </div>
+        ${sm.planned > 0 ? `<div class="tl-cap-bar-track"><div class="tl-cap-bar-fill ${sm.barCls}" style="width:${sm.pct}%"></div></div>` : ''}
+      </div>`;
+    r1.appendChild(th);
+  });
+
+  // Row 2: Date numbers
+  const r2 = document.createElement('tr');
+  allDates.forEach((date, i) => {
+    const key = dk(date.getFullYear(), date.getMonth(), date.getDate());
+    const th = document.createElement('th');
+    let cls = 'tl-date-cell';
+    if (isWeD(date)) cls += ' tl-we';
+    if (key === todayKey) cls += ' tl-today-col';
+    if (boundaryIdx.has(i)) cls += ' tl-sprint-boundary';
+    th.className = cls;
+    th.textContent = String(date.getDate()).padStart(2, '0');
+    r2.appendChild(th);
+  });
+
+  // Row 3: Day-of-week initial
+  const r3 = document.createElement('tr');
+  allDates.forEach((date, i) => {
+    const key = dk(date.getFullYear(), date.getMonth(), date.getDate());
+    const th = document.createElement('th');
+    let cls = 'tl-dow-cell';
+    if (isWeD(date)) cls += ' tl-we';
+    if (key === todayKey) cls += ' tl-today-col';
+    if (boundaryIdx.has(i)) cls += ' tl-sprint-boundary';
+    th.className = cls;
+    th.textContent = DOWS[date.getDay()].charAt(0);
+    r3.appendChild(th);
+  });
+
+  thead.appendChild(r1); thead.appendChild(r2); thead.appendChild(r3);
+  table.appendChild(thead);
+
+  // Body: one row per member
+  const tbody = document.createElement('tbody');
+  state.members.forEach((m, mi) => {
+    const tr = document.createElement('tr');
+    const nameTd = document.createElement('td');
+    nameTd.className = 'tl-member-name';
+    nameTd.innerHTML = `<div class="name-inner"><span>${esc(m.name)}</span><button class="del-btn" onclick="delMember(${mi});renderTimeline()">✕</button></div>`;
+    tr.appendChild(nameTd);
+    allDates.forEach((date, i) => {
+      const key = dk(date.getFullYear(), date.getMonth(), date.getDate());
+      const lt = m.leaves[key];
+      const td = document.createElement('td');
+      let cls = 'tl-day-cell';
+      if (lt) cls += ` td-leave-${lt}`;
+      else if (key === todayKey) cls += ' tl-today-col';
+      else if (isWeD(date)) cls += ' tl-we';
+      if (boundaryIdx.has(i)) cls += ' tl-sprint-boundary';
+      td.className = cls;
+      td.title = lt ? `${m.name} — ${lt} leave` : '';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  // Footer: "off per day" heatmap row
+  const tfoot = document.createElement('tfoot');
+  const fr = document.createElement('tr');
+  const ftd = document.createElement('td');
+  ftd.className = 'tl-footer-lbl'; ftd.textContent = 'Off per day';
+  fr.appendChild(ftd);
+  allDates.forEach((date, i) => {
+    const key = dk(date.getFullYear(), date.getMonth(), date.getDate());
+    const we = isWeD(date);
+    const count = we ? 0 : state.members.filter(m => m.leaves[key]).length;
+    const td = document.createElement('td');
+    let cls = 'tl-off-cell';
+    if (we) cls += ' tl-we';
+    if (boundaryIdx.has(i)) cls += ' tl-sprint-boundary';
+    td.className = cls;
+    if (!we && count > 0) {
+      const intensity = Math.min(count / Math.max(state.members.length, 1), 1);
+      td.style.background = `rgba(220,53,69,${0.08 + intensity * 0.42})`;
+      td.textContent = count;
+    }
+    fr.appendChild(td);
+  });
+  tfoot.appendChild(fr);
+  table.appendChild(tfoot);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tl-wrap';
+  wrap.appendChild(table);
+
+  const legend = document.createElement('div');
+  legend.className = 'tl-legend';
+  legend.innerHTML = `
+    <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--annual-bg);border:1px solid rgba(0,190,90,0.3)"></div><span style="color:var(--annual-text);font-weight:700">Annual Leave</span></div>
+    <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--sick-bg);border:1px solid rgba(220,53,69,0.25)"></div><span style="color:var(--sick-text);font-weight:700">Sick Leave</span></div>
+    <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--public-bg);border:1px solid rgba(0,27,94,0.2)"></div><span style="color:var(--public-text);font-weight:700">Public Holiday</span></div>
+    <div class="tl-legend-item"><div class="tl-legend-dot" style="background:var(--other-bg);border:1px solid rgba(58,75,88,0.2)"></div><span style="color:var(--other-text);font-weight:700">Other</span></div>
+    <div class="tl-legend-item" style="margin-left:auto"><div class="tl-legend-dot" style="background:rgba(220,53,69,0.3)"></div><span style="color:var(--text-muted);font-weight:700">Off-count heatmap (footer)</span></div>`;
+
+  inner.appendChild(wrap);
+  inner.appendChild(legend);
+}
+
+function fmtD(d) { return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()].slice(0, 3)} ${d.getFullYear()}`; }
+function mTh(t, c) { const h = document.createElement('th'); h.textContent = t; if (c) h.className = c; return h; }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+</script>
+</body>
+</html>
