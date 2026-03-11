@@ -3,732 +3,681 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Team Leave Tracker</title>
+<title>OSF Digital | Sprint & Leave Planner</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inconsolata:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --ink: #0d1117;
-  --ink-mid: #1c2333;
-  --ink-soft: #3d4a5c;
-  --muted: #7c8799;
-  --border: #d0d7de;
-  --surface: #f6f8fa;
-  --white: #ffffff;
-  --accent: #0969da;
-  --accent-hover: #0550ae;
-  --today-bg: #fff8c5;
-  --today-border: #d4a72c;
-  --weekend-bg: #f6f8fa;
+  /* OSF Brand Colors */
+  --osf-blue:       #001B5E;
+  --osf-blue-mid:   #002680;
+  --osf-blue-light: #E9F2FF;
+  --osf-green:      #00BE5A;
+  --osf-grey:       #3A4B58;
+  --osf-grey-light: #AAAFB6;
+  --osf-grey-pale:  #F4F6F9;
+  --white:          #FFFFFF;
+  --border:         #DDE3ED;
+  --border-light:   #EEF1F6;
 
-  --annual-bg: #dafbe1; --annual-text: #116329; --annual-dot: #2da44e;
-  --sick-bg: #ffebe9;   --sick-text: #82071e;   --sick-dot: #cf222e;
-  --public-bg: #fff1e5; --public-text: #7d4e00; --public-dot: #fb8f44;
-  --other-bg:  #eae6ff; --other-text: #44367a;  --other-dot: #8250df;
+  /* Semantic */
+  --text-head:   var(--osf-blue);
+  --text-body:   var(--osf-grey);
+  --text-muted:  var(--osf-grey-light);
+  --surface:     var(--white);
+  --surface-alt: var(--osf-grey-pale);
+
+  /* Leave colors — distinct but brand-harmonious */
+  --annual-bg:  rgba(0,190,90,0.12);  --annual-text: #006830;  --annual-dot: var(--osf-green);
+  --sick-bg:    rgba(220,53,69,0.10); --sick-text: #8b1a24;    --sick-dot: #dc3545;
+  --public-bg:  rgba(0,27,94,0.08);   --public-text: var(--osf-blue); --public-dot: var(--osf-blue);
+  --other-bg:   rgba(58,75,88,0.10);  --other-text: var(--osf-grey);  --other-dot: var(--osf-grey);
+
+  --we-bg:       #F8F9FB;
+  --today-bg:    rgba(0,190,90,0.08);
+  --today-bdr:   var(--osf-green);
 }
 
 body {
-  font-family: 'Syne', sans-serif;
-  background: #eef1f5;
+  font-family: 'Lato', Calibri, sans-serif;
+  background: var(--osf-grey-pale);
+  color: var(--text-body);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 24px 16px;
+  font-size: 14px;
 }
 
-/* ── Setup / Config screen ── */
+/* ── Setup Overlay ─────────────────────────────────── */
 .setup-overlay {
-  position: fixed; inset: 0;
-  background: rgba(13,17,23,0.7);
-  backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
+  position:fixed;inset:0;
+  background:rgba(0,27,94,0.92);
+  backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;
 }
 .setup-box {
-  background: white;
-  border-radius: 16px;
-  padding: 36px 40px;
-  max-width: 480px;
-  width: 100%;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+  background:var(--white);
+  border-radius:12px;
+  padding:40px;
+  max-width:460px;width:100%;
+  box-shadow:0 24px 64px rgba(0,0,0,0.3);
 }
-.setup-box h2 {
-  font-size: 22px; font-weight: 700; color: var(--ink);
-  margin-bottom: 6px;
+.setup-logo {
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:24px;
 }
-.setup-box p {
-  font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 24px;
-}
-.setup-field { margin-bottom: 16px; }
-.setup-field label {
-  display: block; font-size: 12px; font-weight: 600;
-  color: var(--ink-soft); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.setup-field input {
-  width: 100%; padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  font-family: 'Inconsolata', monospace;
-  font-size: 13px; color: var(--ink);
-  outline: none; transition: border-color 0.15s;
-}
-.setup-field input:focus { border-color: var(--accent); }
-.setup-field .hint {
-  font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.5;
-}
-.setup-field .hint a { color: var(--accent); text-decoration: none; }
-.setup-field .hint a:hover { text-decoration: underline; }
-.setup-btn {
-  width: 100%; padding: 12px;
-  background: var(--ink); color: white;
-  border: none; border-radius: 8px;
-  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: background 0.15s; margin-top: 8px;
-}
-.setup-btn:hover { background: var(--ink-mid); }
-.setup-error {
-  font-size: 12px; color: #cf222e;
-  background: #ffebe9; border-radius: 6px; padding: 8px 12px;
-  margin-top: 12px; display: none;
-}
+.setup-logo .osf { font-size:20px;font-weight:900;color:var(--osf-blue); }
+.setup-logo .sep { width:2px;height:22px;background:var(--osf-blue);margin:0 2px; }
+.setup-logo .dig { font-size:20px;font-weight:300;color:var(--osf-blue); }
+.setup-box h2 { font-size:18px;font-weight:700;color:var(--osf-blue);margin-bottom:6px; }
+.setup-box p  { font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:24px; }
+.sf { margin-bottom:16px; }
+.sf label { display:block;font-size:11px;font-weight:700;color:var(--osf-blue);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px; }
+.sf input { width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:6px;color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;outline:none;transition:border-color .15s;background:var(--white); }
+.sf input:focus { border-color:var(--osf-blue); }
+.sf .hint { font-size:11px;color:var(--text-muted);margin-top:5px;line-height:1.5; }
+.sf .hint a { color:var(--osf-green);text-decoration:none;font-weight:700; }
+.setup-btn { width:100%;padding:12px;background:var(--osf-blue);color:white;border:none;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:4px; }
+.setup-btn:hover { background:var(--osf-blue-mid); }
+.setup-err { font-size:12px;color:#dc3545;background:#fdf0f1;border-radius:6px;padding:9px 13px;margin-top:12px;display:none;border-left:3px solid #dc3545; }
 
-/* ── Main App ── */
-.app { width: 100%; max-width: 1400px; }
+/* ── App Shell ─────────────────────────────────────── */
+.app { display:flex;flex-direction:column;min-height:100vh; }
 
-.card {
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
-  overflow: hidden;
-  margin-bottom: 12px;
+/* ── Top Nav ───────────────────────────────────────── */
+.topnav {
+  background:var(--osf-blue);
+  padding:0 28px;
+  display:flex;align-items:center;
+  height:56px;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 8px rgba(0,27,94,0.2);
 }
+.nav-logo { display:flex;align-items:center;gap:0;margin-right:36px; }
+.nav-logo .osf { font-size:17px;font-weight:900;color:white;letter-spacing:-0.3px; }
+.nav-logo .sep { width:2px;height:18px;background:white;margin:0 3px;opacity:0.9; }
+.nav-logo .dig { font-size:17px;font-weight:300;color:white; }
+.nav-divider { width:1px;height:22px;background:rgba(255,255,255,0.2);margin-right:28px; }
+.nav-app-name { font-size:13px;font-weight:400;color:rgba(255,255,255,0.7);margin-right:32px;white-space:nowrap; }
 
-/* Top bar */
-.topbar {
-  background: var(--ink);
-  padding: 16px 24px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-}
-.topbar-left { display: flex; align-items: center; gap: 20px; }
-.app-title {
-  font-size: 16px; font-weight: 700; color: white; letter-spacing: 0.3px;
-}
-.nav-group { display: flex; align-items: center; gap: 4px; }
-.nav-btn {
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-  color: white; width: 30px; height: 30px; border-radius: 6px;
-  cursor: pointer; font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.12s;
-}
-.nav-btn:hover { background: rgba(255,255,255,0.2); }
-.month-display {
-  font-family: 'Inconsolata', monospace; font-size: 14px; font-weight: 500;
-  color: white; min-width: 148px; text-align: center;
-}
-.topbar-right { display: flex; align-items: center; gap: 8px; }
-.today-btn {
-  background: var(--accent); color: white; border: none;
-  padding: 6px 14px; border-radius: 6px;
-  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: background 0.12s;
-}
-.today-btn:hover { background: var(--accent-hover); }
-.save-status {
-  font-size: 11px; color: rgba(255,255,255,0.55);
-  font-family: 'Inconsolata', monospace; min-width: 90px; text-align: right;
-}
-.save-status.saving { color: #fb8f44; }
-.save-status.saved  { color: #2da44e; }
-.save-status.error  { color: #cf222e; }
+.tab-btn { background:none;border:none;color:rgba(255,255,255,0.65);font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;padding:0 16px;height:56px;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;letter-spacing:0.2px; }
+.tab-btn:hover { color:white; }
+.tab-btn.active { color:white;border-bottom-color:var(--osf-green); }
 
-.settings-btn {
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7); width: 30px; height: 30px; border-radius: 6px;
-  cursor: pointer; font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.12s;
-}
-.settings-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+.nav-right { margin-left:auto;display:flex;align-items:center;gap:10px; }
+.save-status { font-size:11px;color:rgba(255,255,255,0.5);min-width:80px;text-align:right;font-weight:400; }
+.save-status.saving{color:#fbbf24;} .save-status.saved{color:var(--osf-green);} .save-status.error{color:#f87171;}
+.icon-btn { background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s; }
+.icon-btn:hover { background:rgba(255,255,255,0.2);color:white; }
 
-/* Mode bar */
-.modebar {
-  padding: 10px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-}
-.mode-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
-.mode-chip {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border-radius: 20px;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer; border: 1.5px solid transparent;
-  transition: transform 0.1s, box-shadow 0.1s;
-  user-select: none;
-}
-.mode-chip:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.mode-chip.active { border-color: var(--ink) !important; box-shadow: 0 0 0 2px rgba(13,17,23,0.15); }
-.chip-dot { width: 8px; height: 8px; border-radius: 50%; }
-.chip-annual { background: var(--annual-bg); color: var(--annual-text); }
-.chip-sick   { background: var(--sick-bg);   color: var(--sick-text); }
-.chip-public { background: var(--public-bg); color: var(--public-text); }
-.chip-other  { background: var(--other-bg);  color: var(--other-text); }
-.chip-clear  { background: white; color: var(--ink-soft); border: 1.5px solid var(--border) !important; }
-.mode-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+/* ── Panels ────────────────────────────────────────── */
+.panel { display:none;flex:1;padding:28px; }
+.panel.active { display:block; }
 
-/* Add member */
-.addbar {
-  padding: 10px 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px;
-}
-.member-input {
-  font-family: 'Syne', sans-serif; font-size: 13px;
-  padding: 7px 12px; border: 1.5px solid var(--border);
-  border-radius: 7px; outline: none; width: 220px;
-  transition: border-color 0.15s;
-}
-.member-input:focus { border-color: var(--accent); }
-.add-btn {
-  background: var(--ink); color: white; border: none;
-  padding: 7px 16px; border-radius: 7px;
-  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: background 0.12s;
-}
-.add-btn:hover { background: var(--ink-mid); }
-.addbar-hint { font-size: 11px; color: var(--muted); margin-left: auto; }
+/* ── Calendar Panel ────────────────────────────────── */
+.cal-toolbar { display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap; }
+.month-nav { display:flex;align-items:center;gap:6px; }
+.nav-btn { background:var(--white);border:1.5px solid var(--border);color:var(--osf-blue);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .12s; }
+.nav-btn:hover { background:var(--osf-blue);color:white;border-color:var(--osf-blue); }
+.month-lbl { font-size:15px;font-weight:700;color:var(--osf-blue);min-width:150px;text-align:center; }
+.today-btn { background:var(--osf-blue);color:white;border:none;padding:7px 16px;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .12s;letter-spacing:0.2px; }
+.today-btn:hover { background:var(--osf-blue-mid); }
+
+.mode-bar { display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap; }
+.mode-lbl { font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin-right:4px; }
+.chip { display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:all .12s;user-select:none;letter-spacing:0.1px; }
+.chip:hover { transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+.chip.active { box-shadow:0 0 0 2px var(--osf-blue); }
+.chip-annual { background:var(--annual-bg);color:var(--annual-text);border-color:rgba(0,190,90,0.3); }
+.chip-sick   { background:var(--sick-bg);  color:var(--sick-text);  border-color:rgba(220,53,69,0.25); }
+.chip-public { background:var(--public-bg);color:var(--public-text);border-color:rgba(0,27,94,0.2); }
+.chip-other  { background:var(--other-bg); color:var(--other-text); border-color:rgba(58,75,88,0.2); }
+.chip-clear  { background:var(--white);color:var(--text-muted);border:1.5px solid var(--border)!important; }
+.chip-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+
+.add-bar { display:flex;gap:8px;align-items:center;margin-bottom:18px; }
+.member-inp { background:var(--white);border:1.5px solid var(--border);color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;padding:8px 13px;border-radius:6px;outline:none;width:230px;transition:border-color .15s; }
+.member-inp:focus { border-color:var(--osf-blue); }
+.add-btn { background:var(--osf-green);color:white;border:none;padding:8px 18px;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .12s; }
+.add-btn:hover { opacity:.88; }
+.bar-hint { font-size:11px;color:var(--text-muted);margin-left:auto; }
 
 /* Table */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.cal-wrap { overflow-x:auto;border-radius:8px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+table { width:100%;border-collapse:collapse;table-layout:fixed; }
+.col-name{width:170px;} .col-day{min-width:28px;}
 
-.col-name { width: 170px; }
-.col-day  { min-width: 30px; }
+thead tr.date-row th { background:var(--osf-blue);color:rgba(255,255,255,0.85);font-size:10px;font-weight:700;padding:9px 2px;text-align:center;border-right:1px solid rgba(255,255,255,0.08);letter-spacing:0.3px; }
+thead tr.date-row th.th-name { text-align:left;padding-left:16px;border-right:2px solid rgba(255,255,255,0.15);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.6); }
+thead tr.date-row th.th-we   { background:#00154a;color:rgba(255,255,255,0.4); }
+thead tr.date-row th.th-today { background:var(--osf-green);color:white; }
 
-thead tr.date-row th {
-  background: var(--ink-mid);
-  color: rgba(255,255,255,0.9);
-  font-family: 'Inconsolata', monospace;
-  font-size: 11px; font-weight: 500;
-  padding: 9px 2px; text-align: center;
-  border-right: 1px solid rgba(255,255,255,0.07);
-}
-thead tr.date-row th.th-name {
-  text-align: left; padding-left: 18px;
-  border-right: 2px solid rgba(255,255,255,0.12);
-  font-family: 'Syne', sans-serif; font-size: 11px;
-  font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-  color: rgba(255,255,255,0.6);
-}
-thead tr.date-row th.th-weekend { background: #252f3e; color: rgba(255,255,255,0.45); }
-thead tr.date-row th.th-today   { background: var(--accent); color: white; }
+thead tr.dow-row th { background:var(--osf-blue-light);color:var(--osf-blue);font-size:9px;font-weight:700;text-transform:uppercase;padding:4px 2px;text-align:center;border-right:1px solid var(--border);border-bottom:2px solid var(--border); }
+thead tr.dow-row th.th-name { text-align:left;padding-left:16px;border-right:2px solid var(--border);color:var(--text-muted); }
+thead tr.dow-row th.th-we   { background:#f0f3f8;color:var(--text-muted); }
+thead tr.dow-row th.th-today { background:rgba(0,190,90,0.1);color:var(--osf-green); }
 
-thead tr.dow-row th {
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
-  padding: 4px 2px; text-align: center;
-  border-right: 1px solid var(--border);
-  border-bottom: 2px solid var(--border);
-}
-thead tr.dow-row th.th-name {
-  text-align: left; padding-left: 18px;
-  border-right: 2px solid var(--border);
-}
-thead tr.dow-row th.th-weekend { background: #f0f2f5; color: #adb5bd; }
-thead tr.dow-row th.th-today   { background: var(--today-bg); color: var(--today-border); font-weight: 700; }
+tbody tr { border-bottom:1px solid var(--border-light); }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:nth-child(even) td:not(.td-we):not(.td-today):not([class*="td-leave"]) { background:#fafbfd; }
+tbody tr:hover { background:var(--osf-blue-light) !important; }
+tbody tr:hover td { background:transparent !important; }
 
-tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:nth-child(even) td:not(.td-weekend):not(.td-today):not([class*="td-leave"]) { background: #fafbfc; }
+td { height:34px;padding:0;border-right:1px solid var(--border-light);vertical-align:middle; }
+td.td-name { padding:0 10px 0 16px;border-right:2px solid var(--border);font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--osf-blue); }
+.name-inner { display:flex;align-items:center;justify-content:space-between;height:100%; }
+.del-btn { opacity:0;background:none;border:none;color:#dc3545;cursor:pointer;font-size:11px;padding:2px 5px;border-radius:4px;transition:opacity .1s;flex-shrink:0; }
+tbody tr:hover .del-btn { opacity:0.5; }
+.del-btn:hover { opacity:1!important;background:#fdf0f1; }
 
-td {
-  height: 34px; padding: 0;
-  border-right: 1px solid var(--border);
-  vertical-align: middle;
-}
-td.td-name {
-  padding: 0 10px 0 18px;
-  border-right: 2px solid var(--border);
-  font-size: 13px; font-weight: 500;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  color: var(--ink);
-  position: relative;
-}
-.name-inner { display: flex; align-items: center; justify-content: space-between; height: 100%; }
-.del-btn {
-  opacity: 0; background: none; border: none;
-  color: #cf222e; cursor: pointer; font-size: 12px;
-  padding: 2px 5px; border-radius: 4px;
-  transition: opacity 0.1s; flex-shrink: 0;
-}
-tbody tr:hover .del-btn { opacity: 0.5; }
-.del-btn:hover { opacity: 1 !important; background: #ffebe9; }
+td.td-day { cursor:pointer;transition:filter .08s; }
+td.td-day:hover { filter:brightness(0.9); }
+td.td-we    { background:var(--we-bg); }
+td.td-today { background:var(--today-bg)!important;border-bottom:2px solid var(--today-bdr); }
+td.td-leave-annual { background:var(--annual-bg); }
+td.td-leave-sick   { background:var(--sick-bg); }
+td.td-leave-public { background:var(--public-bg); }
+td.td-leave-other  { background:var(--other-bg); }
 
-td.td-day {
-  cursor: pointer; text-align: center;
-  transition: filter 0.08s;
-}
-td.td-day:hover { filter: brightness(0.9); }
-td.td-weekend { background: var(--weekend-bg); }
-td.td-today   { background: var(--today-bg) !important; border-bottom: 2px solid var(--today-border); }
-td.td-leave-annual { background: var(--annual-bg); }
-td.td-leave-sick   { background: var(--sick-bg); }
-td.td-leave-public { background: var(--public-bg); }
-td.td-leave-other  { background: var(--other-bg); }
+.no-members td { padding:48px;text-align:center;color:var(--text-muted);font-size:13px; }
 
-.no-members-row td {
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 13px;
-}
+.cal-summary { display:flex;gap:20px;flex-wrap:wrap;padding:11px 18px;background:var(--osf-blue-light);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:12px;color:var(--text-body); }
+.cal-summary strong { color:var(--osf-blue);font-weight:700; }
 
-/* Summary */
-.summary {
-  padding: 11px 24px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex; gap: 20px; flex-wrap: wrap;
-  font-size: 12px; color: var(--muted);
-  align-items: center;
-}
-.stat strong { color: var(--ink); font-weight: 700; }
-.stat-today { margin-left: auto; color: #cf222e; font-weight: 500; }
+/* ── Config Panel ──────────────────────────────────── */
+.config-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px; }
+.config-card { background:var(--white);border:1px solid var(--border);border-radius:8px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.config-card h3 { font-size:14px;font-weight:700;color:var(--osf-blue);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--osf-green);display:inline-block; }
+.cf { margin-bottom:16px; }
+.cf label { display:block;font-size:11px;font-weight:700;color:var(--osf-blue);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px; }
+.cf input,.cf select { width:100%;padding:9px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:6px;color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;outline:none;transition:border-color .15s; }
+.cf input:focus,.cf select:focus { border-color:var(--osf-blue); }
+.save-cfg-btn { background:var(--osf-blue);color:white;border:none;padding:10px 22px;border-radius:6px;font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .12s;margin-top:4px; }
+.save-cfg-btn:hover { background:var(--osf-blue-mid); }
+.cfg-ok { font-size:12px;color:var(--osf-green);margin-left:12px;opacity:0;transition:opacity .3s;font-weight:700; }
+.cap-table { width:100%;border-collapse:collapse;margin-top:8px; }
+.cap-table th { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:6px 8px;text-align:left;border-bottom:2px solid var(--border); }
+.cap-table td { padding:6px 8px;border-bottom:1px solid var(--border-light);font-size:13px;height:auto;border-right:none;color:var(--osf-blue);font-weight:700; }
+.cap-inp { width:80px;padding:5px 8px;background:var(--white);border:1.5px solid var(--border);border-radius:5px;color:var(--text-body);font-family:'Lato',Calibri,sans-serif;font-size:13px;outline:none; }
+.cap-inp:focus { border-color:var(--osf-blue); }
 
-/* Loading spinner */
-.spinner {
-  display: inline-block; width: 12px; height: 12px;
-  border: 2px solid rgba(255,255,255,0.2);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle; margin-right: 4px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ── Sprint Panel ──────────────────────────────────── */
+.sprint-hdr { display:flex;align-items:baseline;gap:14px;margin-bottom:22px; }
+.sprint-hdr h2 { font-size:20px;font-weight:900;color:var(--osf-blue); }
+.sprint-meta-lbl { font-size:12px;color:var(--text-muted); }
+.sprints-list { display:flex;flex-direction:column;gap:16px; }
+
+.sprint-card { background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.sprint-card-top { padding:14px 20px;background:var(--osf-blue);border-bottom:3px solid var(--osf-green);display:flex;align-items:center;gap:14px;flex-wrap:wrap; }
+.sprint-num-badge { font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);padding:3px 10px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px; }
+.sprint-date-range { font-size:14px;font-weight:700;color:white; }
+.sprint-date-range span { font-size:12px;color:rgba(255,255,255,0.6);font-weight:400; }
+.sprint-planned-area { margin-left:auto;display:flex;align-items:center;gap:8px; }
+.sprint-planned-lbl { font-size:11px;color:rgba(255,255,255,0.6);font-weight:700;text-transform:uppercase;letter-spacing:0.4px; }
+.sprint-planned-inp { width:80px;padding:5px 9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:5px;color:white;font-family:'Lato',Calibri,sans-serif;font-size:13px;font-weight:700;outline:none;text-align:center;transition:border-color .15s; }
+.sprint-planned-inp:focus { border-color:var(--osf-green);background:rgba(255,255,255,0.15); }
+.sprint-planned-inp::placeholder { color:rgba(255,255,255,0.35); }
+.sprint-unit-lbl { font-size:11px;color:rgba(255,255,255,0.55); }
+
+.sprint-card-body { padding:20px; }
+.cap-overview { display:flex;gap:32px;margin-bottom:18px;flex-wrap:wrap; }
+.cap-stat .val { font-size:26px;font-weight:900;color:var(--osf-blue); }
+.cap-stat .lbl { font-size:11px;color:var(--text-muted);margin-top:2px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px; }
+.cap-stat.green .val{color:#006830;} .cap-stat.amber .val{color:#92580a;} .cap-stat.red .val{color:#8b1a24;}
+
+.cap-bar-area { margin-bottom:18px; }
+.cap-bar-lbls { display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:700; }
+.cap-bar-track { height:6px;background:var(--osf-blue-light);border-radius:99px;overflow:hidden; }
+.cap-bar-fill { height:100%;border-radius:99px;background:var(--osf-green);transition:width .4s ease; }
+.cap-bar-fill.amber{background:#f59e0b;} .cap-bar-fill.red{background:#dc3545;}
+
+.leave-section-title { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:10px; }
+.leave-rows { display:flex;flex-direction:column;gap:4px; }
+.leave-row { display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:5px;background:var(--osf-grey-pale);font-size:13px;border-left:3px solid var(--border); }
+.leave-row-name { font-weight:700;color:var(--osf-blue);min-width:150px; }
+.leave-tags { display:flex;gap:5px;flex-wrap:wrap; }
+.leave-tag { font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;text-transform:uppercase;letter-spacing:0.3px; }
+.tag-annual { background:var(--annual-bg);color:var(--annual-text); }
+.tag-sick   { background:var(--sick-bg);color:var(--sick-text); }
+.tag-public { background:var(--public-bg);color:var(--public-text); }
+.tag-other  { background:var(--other-bg);color:var(--other-text); }
+.leave-row-avail { margin-left:auto;font-size:12px;color:var(--text-muted);font-weight:700; }
+.no-leave { font-size:13px;color:var(--osf-green);padding:6px 0;font-weight:700; }
+.no-sprint-msg { text-align:center;padding:60px 24px;color:var(--text-muted);font-size:13px;line-height:1.9; }
+.no-sprint-msg strong { color:var(--osf-blue); }
+
+/* ── Footer ────────────────────────────────────────── */
+.app-footer { padding:16px 28px;background:var(--osf-blue);display:flex;align-items:center;justify-content:space-between; }
+.footer-brand { display:flex;align-items:center;gap:4px; }
+.footer-brand .osf { font-size:13px;font-weight:900;color:white; }
+.footer-brand .sep { width:1.5px;height:14px;background:white;margin:0 2px;opacity:0.7; }
+.footer-brand .dig { font-size:13px;font-weight:300;color:white; }
+.footer-text { font-size:11px;color:rgba(255,255,255,0.45); }
 </style>
 </head>
 <body>
 
-<!-- Setup screen -->
+<!-- Setup -->
 <div class="setup-overlay" id="setupOverlay">
   <div class="setup-box">
-    <h2>⚙️ Connect to GitHub Storage</h2>
-    <p>Your leave data will be saved to a JSON file in your GitHub repository — no server needed. This is a one-time setup.</p>
-
-    <div class="setup-field">
+    <div class="setup-logo">
+      <span class="osf">OSF</span><span class="sep"></span><span class="dig">DIGITAL</span>
+    </div>
+    <h2>Sprint & Leave Planner</h2>
+    <p>Connect to GitHub to persist leave data and sprint configuration. One-time setup per browser.</p>
+    <div class="sf">
       <label>GitHub Personal Access Token</label>
       <input type="password" id="cfgToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-      <div class="hint">
-        Create one at <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a>
-        — tick <strong>repo</strong> scope only. It stays in your browser, never sent anywhere except GitHub.
-      </div>
+      <div class="hint">Create at <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a> — tick <strong>repo</strong> scope only.</div>
     </div>
-    <div class="setup-field">
+    <div class="sf">
       <label>Repository (owner/repo)</label>
-      <input type="text" id="cfgRepo" placeholder="yourname/team-leave-tracker">
+      <input type="text" id="cfgRepo" placeholder="benmcg93-arch/team-leave-tracker">
     </div>
-    <div class="setup-field">
+    <div class="sf">
       <label>Branch</label>
-      <input type="text" id="cfgBranch" placeholder="main" value="main">
+      <input type="text" id="cfgBranch" value="main">
     </div>
-
-    <button class="setup-btn" onclick="saveConfig()">Connect & Load Data</button>
-    <div class="setup-error" id="setupError"></div>
+    <button class="setup-btn" onclick="doSetup()">Connect & Load Data</button>
+    <div class="setup-err" id="setupErr"></div>
   </div>
 </div>
 
-<!-- Main App -->
+<!-- App -->
 <div class="app" id="mainApp" style="display:none">
-  <div class="card">
 
-    <!-- Topbar -->
-    <div class="topbar">
-      <div class="topbar-left">
-        <span class="app-title">Team Leave Tracker</span>
-        <div class="nav-group">
-          <button class="nav-btn" onclick="changeMonth(-1)">←</button>
-          <div class="month-display" id="monthDisplay"></div>
-          <button class="nav-btn" onclick="changeMonth(1)">→</button>
-        </div>
-      </div>
-      <div class="topbar-right">
-        <span class="save-status" id="saveStatus">All saved</span>
-        <button class="today-btn" onclick="goToday()">Today</button>
-        <button class="settings-btn" onclick="openSettings()" title="Settings">⚙</button>
-      </div>
+  <!-- Nav -->
+  <div class="topnav">
+    <div class="nav-logo">
+      <span class="osf">OSF</span><span class="sep"></span><span class="dig">DIGITAL</span>
     </div>
-
-    <!-- Mode bar -->
-    <div class="modebar">
-      <span class="mode-label">Mark as:</span>
-      <div class="mode-chip chip-annual active" id="chip-annual" onclick="setMode('annual')">
-        <div class="chip-dot" style="background:var(--annual-dot)"></div> Annual Leave
-      </div>
-      <div class="mode-chip chip-sick" id="chip-sick" onclick="setMode('sick')">
-        <div class="chip-dot" style="background:var(--sick-dot)"></div> Sick Leave
-      </div>
-      <div class="mode-chip chip-public" id="chip-public" onclick="setMode('public')">
-        <div class="chip-dot" style="background:var(--public-dot)"></div> Public Holiday
-      </div>
-      <div class="mode-chip chip-other" id="chip-other" onclick="setMode('other')">
-        <div class="chip-dot" style="background:var(--other-dot)"></div> Other
-      </div>
-      <div class="mode-sep"></div>
-      <div class="mode-chip chip-clear" id="chip-clear" onclick="setMode('clear')">✕ Clear</div>
+    <div class="nav-divider"></div>
+    <span class="nav-app-name">Sprint & Leave Planner</span>
+    <button class="tab-btn active" id="tab-leave"   onclick="showTab('leave')">Leave Calendar</button>
+    <button class="tab-btn"        id="tab-sprints" onclick="showTab('sprints')">Sprint Capacity</button>
+    <button class="tab-btn"        id="tab-config"  onclick="showTab('config')">Configuration</button>
+    <div class="nav-right">
+      <span class="save-status" id="saveStatus">—</span>
+      <button class="icon-btn" title="Reconnect" onclick="openSettings()">⚙</button>
     </div>
+  </div>
 
-    <!-- Add member -->
-    <div class="addbar">
-      <input class="member-input" id="memberInput" type="text" placeholder="Add team member…"
-             onkeydown="if(event.key==='Enter') addMember()">
-      <button class="add-btn" onclick="addMember()">+ Add</button>
-      <span class="addbar-hint">Left-click to mark · Right-click to clear</span>
+  <!-- Leave Calendar -->
+  <div class="panel active" id="panel-leave">
+    <div class="cal-toolbar">
+      <div class="month-nav">
+        <button class="nav-btn" onclick="changeMonth(-1)">←</button>
+        <div class="month-lbl" id="monthLbl"></div>
+        <button class="nav-btn" onclick="changeMonth(1)">→</button>
+      </div>
+      <button class="today-btn" onclick="goToday()">Today</button>
     </div>
-
-    <!-- Calendar table -->
-    <div class="table-wrap">
+    <div class="mode-bar">
+      <span class="mode-lbl">Mark as:</span>
+      <div class="chip chip-annual active" id="chip-annual" onclick="setMode('annual')"><div class="chip-dot" style="background:var(--annual-dot)"></div>Annual Leave</div>
+      <div class="chip chip-sick"   id="chip-sick"   onclick="setMode('sick')"><div class="chip-dot" style="background:var(--sick-dot)"></div>Sick Leave</div>
+      <div class="chip chip-public" id="chip-public" onclick="setMode('public')"><div class="chip-dot" style="background:var(--public-dot)"></div>Public Holiday</div>
+      <div class="chip chip-other"  id="chip-other"  onclick="setMode('other')"><div class="chip-dot" style="background:var(--other-dot)"></div>Other</div>
+      <div class="chip chip-clear"  id="chip-clear"  onclick="setMode('clear')">✕ Clear</div>
+    </div>
+    <div class="add-bar">
+      <input class="member-inp" id="memberInp" placeholder="Add team member…" onkeydown="if(event.key==='Enter')addMember()">
+      <button class="add-btn" onclick="addMember()">+ Add Member</button>
+      <span class="bar-hint">Left-click to mark leave · Right-click to clear</span>
+    </div>
+    <div class="cal-wrap">
       <table id="calTable">
         <thead>
           <tr class="date-row" id="dateRow"></tr>
           <tr class="dow-row"  id="dowRow"></tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="calBody"></tbody>
       </table>
+      <div class="cal-summary" id="calSummary"></div>
     </div>
-
-    <!-- Summary -->
-    <div class="summary" id="summary"></div>
   </div>
+
+  <!-- Sprint Capacity -->
+  <div class="panel" id="panel-sprints">
+    <div class="sprint-hdr">
+      <h2>Sprint Capacity</h2>
+      <span class="sprint-meta-lbl" id="sprintMetaLbl"></span>
+    </div>
+    <div class="sprints-list" id="sprintsList"></div>
+  </div>
+
+  <!-- Config -->
+  <div class="panel" id="panel-config">
+    <div class="config-grid">
+      <div class="config-card">
+        <h3>Sprint Settings</h3>
+        <div class="cf"><label>Project / Team Name</label><input type="text" id="cfName" placeholder="e.g. Salesforce Implementation - Phase 1"></div>
+        <div class="cf"><label>Sprint Length (weeks)</label><input type="number" id="cfWeeks" min="1" max="8" value="3"></div>
+        <div class="cf"><label>First Sprint Start Date</label><input type="date" id="cfStart"></div>
+        <div class="cf"><label>Number of Sprints to Show</label><input type="number" id="cfCount" min="1" max="12" value="4"></div>
+        <div class="cf"><label>Capacity Unit</label>
+          <select id="cfUnit">
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+            <option value="points">Story Points</option>
+          </select>
+        </div>
+        <div class="cf"><label>Working Hours per Day</label><input type="number" id="cfHpd" min="1" max="24" value="8"></div>
+        <button class="save-cfg-btn" onclick="saveConfig()">Save Configuration</button>
+        <span class="cfg-ok" id="cfgOk">✓ Saved</span>
+      </div>
+      <div class="config-card">
+        <h3>Per-Member Capacity</h3>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">Override default capacity per person per sprint. Leave blank to use the calculated default based on sprint length and working hours.</p>
+        <table class="cap-table">
+          <thead><tr><th>Team Member</th><th>Capacity / Sprint</th></tr></thead>
+          <tbody id="capBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="app-footer">
+    <div class="footer-brand">
+      <span class="osf">OSF</span><span class="sep"></span><span class="dig">DIGITAL</span>
+    </div>
+    <span class="footer-text">Sprint & Leave Planner · Internal Tool</span>
+  </div>
+
 </div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────────────────
-const DATA_FILE = 'leave-data.json';
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DOWS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOWS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DATA_FILE='sprint-leave-data.json';
 
-let cfg = {}; // { token, repo, branch }
-let state = { members: [] }; // { members: [{name, leaves:{key:type}}] }
-let fileSha = null;
-let currentYear, currentMonth;
-let activeMode = 'annual';
-let saveTimer = null;
+let cfg={};
+let state={ members:[], config:{ projectName:'', sprintWeeks:3, sprintStart:null, numSprints:4, capUnit:'hours', hoursPerDay:8 } };
+let fileSha=null;
+let curY,curM,mode='annual',saveTimer=null;
 
-// ── Boot ─────────────────────────────────────────────────────────────────────
-window.onload = () => {
-  const saved = localStorage.getItem('ltConfig');
-  if (saved) {
-    cfg = JSON.parse(saved);
-    document.getElementById('setupOverlay').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    const now = new Date();
-    currentYear = now.getFullYear();
-    currentMonth = now.getMonth();
-    loadData();
-  }
-};
-
-// ── Setup ────────────────────────────────────────────────────────────────────
-async function saveConfig() {
-  const token  = document.getElementById('cfgToken').value.trim();
-  const repo   = document.getElementById('cfgRepo').value.trim();
-  const branch = document.getElementById('cfgBranch').value.trim() || 'main';
-  const errEl  = document.getElementById('setupError');
-  errEl.style.display = 'none';
-
-  if (!token || !repo) { showSetupError('Please fill in all fields.'); return; }
-
-  cfg = { token, repo, branch };
-
-  // Test connection
-  try {
-    const r = await ghGet(`repos/${repo}`);
-    if (!r.ok) throw new Error('Repository not found or token lacks access.');
-  } catch(e) { showSetupError(e.message); return; }
-
-  localStorage.setItem('ltConfig', JSON.stringify(cfg));
-  document.getElementById('setupOverlay').style.display = 'none';
-  document.getElementById('mainApp').style.display = 'block';
-
-  const now = new Date();
-  currentYear = now.getFullYear();
-  currentMonth = now.getMonth();
-  await loadData();
+window.onload=()=>{ const s=localStorage.getItem('osfSprintCfg'); if(s){ cfg=JSON.parse(s); boot(); } };
+function boot(){
+  document.getElementById('setupOverlay').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  const n=new Date(); curY=n.getFullYear(); curM=n.getMonth();
+  loadData();
 }
-
-function openSettings() {
-  localStorage.removeItem('ltConfig');
-  location.reload();
+async function doSetup(){
+  const token=document.getElementById('cfgToken').value.trim();
+  const repo=document.getElementById('cfgRepo').value.trim();
+  const branch=document.getElementById('cfgBranch').value.trim()||'main';
+  const err=document.getElementById('setupErr'); err.style.display='none';
+  if(!token||!repo){showErr('Please fill in all fields.');return;}
+  cfg={token,repo,branch};
+  try{ const r=await ghGet(`repos/${repo}`); if(!r.ok)throw new Error('Repository not found or token invalid.'); }
+  catch(e){showErr(e.message);return;}
+  localStorage.setItem('osfSprintCfg',JSON.stringify(cfg)); boot();
 }
+function openSettings(){localStorage.removeItem('osfSprintCfg');location.reload();}
+function showErr(m){const e=document.getElementById('setupErr');e.textContent=m;e.style.display='block';}
 
-function showSetupError(msg) {
-  const el = document.getElementById('setupError');
-  el.textContent = msg;
-  el.style.display = 'block';
-}
+function ghH(){return{'Authorization':`Bearer ${cfg.token}`,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};}
+function ghGet(p){return fetch(`https://api.github.com/${p}`,{headers:ghH()});}
 
-// ── GitHub API ────────────────────────────────────────────────────────────────
-function ghHeaders() {
-  return {
-    'Authorization': `Bearer ${cfg.token}`,
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
-  };
-}
-function ghGet(path) {
-  return fetch(`https://api.github.com/${path}`, { headers: ghHeaders() });
-}
-
-async function loadData() {
-  setStatus('loading', '⟳ Loading…');
-  try {
-    const r = await ghGet(`repos/${cfg.repo}/contents/${DATA_FILE}?ref=${cfg.branch}`);
-    if (r.status === 404) {
-      // First use — start fresh
-      state = { members: [] };
-      fileSha = null;
-      setStatus('saved', 'No data yet');
-    } else if (r.ok) {
-      const json = await r.json();
-      fileSha = json.sha;
-      state = JSON.parse(atob(json.content.replace(/\n/g,'')));
-    } else {
-      throw new Error('Failed to load data from GitHub.');
+async function loadData(){
+  setSt('saving','⟳ Loading…');
+  try{
+    const r=await ghGet(`repos/${cfg.repo}/contents/${DATA_FILE}?ref=${cfg.branch}`);
+    if(r.status===404){fileSha=null;}
+    else if(r.ok){
+      const j=await r.json(); fileSha=j.sha;
+      const loaded=JSON.parse(atob(j.content.replace(/\n/g,'')));
+      state={...state,...loaded};
+      state.members=(state.members||[]).map(m=>({...m,leaves:m.leaves||{}}));
     }
-  } catch(e) {
-    setStatus('error', '⚠ Load failed');
-    console.error(e);
+  }catch(e){setSt('error','⚠ Load failed');console.error(e);return;}
+  setSt('saved','✓ Ready'); populateCfgForm(); renderCal();
+}
+async function persist(){
+  setSt('saving','↑ Saving…');
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(state,null,2))));
+  const body={message:`Update ${new Date().toISOString().slice(0,10)}`,content,branch:cfg.branch};
+  if(fileSha)body.sha=fileSha;
+  try{
+    const r=await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${DATA_FILE}`,{method:'PUT',headers:{...ghH(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error(await r.text());
+    fileSha=(await r.json()).content.sha; setSt('saved','✓ Saved');
+  }catch(e){setSt('error','⚠ Save failed');console.error(e);}
+}
+function sched(){clearTimeout(saveTimer);setSt('saving','…');saveTimer=setTimeout(persist,1200);}
+function setSt(cls,msg){const e=document.getElementById('saveStatus');e.className='save-status '+cls;e.textContent=msg;}
+
+function showTab(t){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='sprints')renderSprints();
+  if(t==='config')renderCapBody();
+}
+
+function changeMonth(d){ curM+=d; if(curM>11){curM=0;curY++;} if(curM<0){curM=11;curY--;} renderCal(); }
+function goToday(){ const n=new Date();curY=n.getFullYear();curM=n.getMonth();renderCal(); }
+function setMode(m){ mode=m; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); document.getElementById('chip-'+m).classList.add('active'); }
+function dk(y,m,d){ return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function daysIn(y,m){ return new Date(y,m+1,0).getDate(); }
+function isWe(y,m,d){ const w=new Date(y,m,d).getDay();return w===0||w===6; }
+
+function addMember(){
+  const i=document.getElementById('memberInp'); const n=i.value.trim(); if(!n)return;
+  state.members.push({name:n,leaves:{},capacity:null}); i.value=''; renderCal(); sched();
+}
+function delMember(i){ if(!confirm(`Remove "${state.members[i].name}"?`))return; state.members.splice(i,1); renderCal(); sched(); }
+function toggleLeave(mi,d){
+  const k=dk(curY,curM,d),m=state.members[mi];
+  if(mode==='clear'||m.leaves[k]===mode){delete m.leaves[k];}else{m.leaves[k]=mode;}
+  renderCal(); sched();
+}
+
+function renderCal(){
+  const now=new Date(),todayKey=dk(now.getFullYear(),now.getMonth(),now.getDate());
+  const nd=daysIn(curY,curM);
+  document.getElementById('monthLbl').textContent=`${MONTHS[curM]} ${curY}`;
+  const dR=document.getElementById('dateRow'),wR=document.getElementById('dowRow');
+  dR.innerHTML='';wR.innerHTML='';
+  dR.appendChild(mTh('Team Member','col-name th-name'));
+  wR.appendChild(mTh('','col-name th-name'));
+  for(let d=1;d<=nd;d++){
+    const key=dk(curY,curM,d),we=isWe(curY,curM,d),isTd=key===todayKey;
+    const dow=new Date(curY,curM,d).getDay();
+    dR.appendChild(mTh(String(d).padStart(2,'0'),'col-day'+(isTd?' th-today':we?' th-we':'')));
+    wR.appendChild(mTh(DOWS[dow],''+(isTd?' th-today':we?' th-we':'')));
   }
-  render();
-}
-
-async function saveData() {
-  setStatus('saving', '↑ Saving…');
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
-  const body = {
-    message: `Update leave data ${new Date().toISOString().slice(0,10)}`,
-    content,
-    branch: cfg.branch
-  };
-  if (fileSha) body.sha = fileSha;
-
-  try {
-    const r = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${DATA_FILE}`, {
-      method: 'PUT',
-      headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!r.ok) throw new Error(await r.text());
-    const json = await r.json();
-    fileSha = json.content.sha;
-    setStatus('saved', '✓ Saved');
-  } catch(e) {
-    setStatus('error', '⚠ Save failed');
-    console.error(e);
-  }
-}
-
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  setStatus('saving', '...');
-  saveTimer = setTimeout(saveData, 1200);
-}
-
-function setStatus(cls, msg) {
-  const el = document.getElementById('saveStatus');
-  el.className = 'save-status ' + cls;
-  el.textContent = msg;
-}
-
-// ── UI logic ─────────────────────────────────────────────────────────────────
-function changeMonth(d) {
-  currentMonth += d;
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
-  render();
-}
-function goToday() {
-  const now = new Date();
-  currentYear = now.getFullYear();
-  currentMonth = now.getMonth();
-  render();
-}
-function setMode(m) {
-  activeMode = m;
-  document.querySelectorAll('.mode-chip').forEach(c => c.classList.remove('active'));
-  document.getElementById('chip-'+m).classList.add('active');
-}
-function dkey(y,m,d) {
-  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-}
-function daysIn(y,m) { return new Date(y, m+1, 0).getDate(); }
-
-function toggleLeave(mi, day) {
-  const k = dkey(currentYear, currentMonth, day);
-  const m = state.members[mi];
-  if (!m.leaves) m.leaves = {};
-  if (activeMode === 'clear') {
-    delete m.leaves[k];
-  } else if (m.leaves[k] === activeMode) {
-    delete m.leaves[k];
+  const tb=document.getElementById('calBody'); tb.innerHTML='';
+  if(!state.members.length){
+    const tr=document.createElement('tr');tr.className='no-members';
+    const td=document.createElement('td');td.colSpan=nd+1;td.textContent='No team members yet — add someone above to get started.';
+    tr.appendChild(td);tb.appendChild(tr);
   } else {
-    m.leaves[k] = activeMode;
-  }
-  render();
-  scheduleSave();
-}
-
-function addMember() {
-  const inp = document.getElementById('memberInput');
-  const name = inp.value.trim();
-  if (!name) return;
-  state.members.push({ name, leaves: {} });
-  inp.value = '';
-  render();
-  scheduleSave();
-}
-
-function deleteMember(i) {
-  if (!confirm(`Remove "${state.members[i].name}" from the tracker?`)) return;
-  state.members.splice(i, 1);
-  render();
-  scheduleSave();
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function render() {
-  const now = new Date();
-  const todayKey = dkey(now.getFullYear(), now.getMonth(), now.getDate());
-  const numDays  = daysIn(currentYear, currentMonth);
-
-  document.getElementById('monthDisplay').textContent =
-    `${MONTHS[currentMonth]} ${currentYear}`;
-
-  // Header rows
-  const dateRow = document.getElementById('dateRow');
-  const dowRow  = document.getElementById('dowRow');
-  dateRow.innerHTML = '';
-  dowRow.innerHTML  = '';
-
-  // Name headers
-  const nameTh1 = makeTh('Team Member', 'col-name th-name');
-  const nameTh2 = makeTh('', 'col-name th-name');
-  dateRow.appendChild(nameTh1);
-  dowRow.appendChild(nameTh2);
-
-  for (let d = 1; d <= numDays; d++) {
-    const date = new Date(currentYear, currentMonth, d);
-    const dow  = date.getDay();
-    const isWe = dow === 0 || dow === 6;
-    const key  = dkey(currentYear, currentMonth, d);
-    const isTd = key === todayKey;
-
-    const dTh = makeTh(String(d).padStart(2,'0'), 'col-day' + (isTd ? ' th-today' : isWe ? ' th-weekend' : ''));
-    const wTh = makeTh(DOWS[dow], '' + (isTd ? ' th-today' : isWe ? ' th-weekend' : ''));
-    dateRow.appendChild(dTh);
-    dowRow.appendChild(wTh);
-  }
-
-  // Body
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-
-  if (!state.members.length) {
-    const tr = document.createElement('tr');
-    tr.className = 'no-members-row';
-    const td = document.createElement('td');
-    td.colSpan = numDays + 1;
-    td.textContent = 'No team members yet — add someone above to get started.';
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-  } else {
-    state.members.forEach((member, mi) => {
-      const tr = document.createElement('tr');
-
-      // Name cell
-      const nameTd = document.createElement('td');
-      nameTd.className = 'td-name';
-      nameTd.innerHTML = `<div class="name-inner">
-        <span>${esc(member.name)}</span>
-        <button class="del-btn" onclick="deleteMember(${mi})" title="Remove">✕</button>
-      </div>`;
-      tr.appendChild(nameTd);
-
-      // Day cells
-      for (let d = 1; d <= numDays; d++) {
-        const date = new Date(currentYear, currentMonth, d);
-        const dow  = date.getDay();
-        const isWe = dow === 0 || dow === 6;
-        const key  = dkey(currentYear, currentMonth, d);
-        const isTd = key === todayKey;
-        const lt   = member.leaves && member.leaves[key];
-
-        const td = document.createElement('td');
-        let cls = 'td-day';
-        if (lt)     cls += ` td-leave-${lt}`;
-        else if (isTd) cls += ' td-today';
-        else if (isWe) cls += ' td-weekend';
-        td.className = cls;
-        td.onclick = () => toggleLeave(mi, d);
-        td.oncontextmenu = e => {
-          e.preventDefault();
-          const k = dkey(currentYear, currentMonth, d);
-          delete member.leaves[k];
-          render(); scheduleSave();
-        };
+    state.members.forEach((m,mi)=>{
+      const tr=document.createElement('tr');
+      const nt=document.createElement('td');nt.className='td-name';
+      nt.innerHTML=`<div class="name-inner"><span>${esc(m.name)}</span><button class="del-btn" onclick="delMember(${mi})">✕</button></div>`;
+      tr.appendChild(nt);
+      for(let d=1;d<=nd;d++){
+        const key=dk(curY,curM,d),we=isWe(curY,curM,d),isTd=key===todayKey,lt=m.leaves[key];
+        const td=document.createElement('td'); let cls='td-day';
+        if(lt)cls+=` td-leave-${lt}`;else if(isTd)cls+=' td-today';else if(we)cls+=' td-we';
+        td.className=cls; td.onclick=()=>toggleLeave(mi,d);
+        td.oncontextmenu=e=>{e.preventDefault();delete m.leaves[key];renderCal();sched();};
         tr.appendChild(td);
       }
-
-      tbody.appendChild(tr);
+      tb.appendChild(tr);
     });
   }
-
-  renderSummary(numDays, todayKey);
-}
-
-function renderSummary(numDays, todayKey) {
-  let totals = { annual:0, sick:0, public:0, other:0 };
-  let todayNames = [];
-
-  state.members.forEach(m => {
-    if (!m.leaves) return;
-    Object.entries(m.leaves).forEach(([k,t]) => {
-      const [y,mo] = k.split('-').map(Number);
-      if (y === currentYear && mo === currentMonth+1) totals[t] = (totals[t]||0)+1;
+  let tot={annual:0,sick:0,public:0,other:0},todayNames=[];
+  state.members.forEach(m=>{
+    Object.entries(m.leaves||{}).forEach(([k,t])=>{
+      const[y,mo]=k.split('-').map(Number);
+      if(y===curY&&mo===curM+1)tot[t]=(tot[t]||0)+1;
     });
-    if (m.leaves[todayKey]) todayNames.push(m.name);
+    if(m.leaves[todayKey])todayNames.push(m.name);
   });
-
-  const total = Object.values(totals).reduce((a,b)=>a+b,0);
-  const isNow = currentYear === new Date().getFullYear() && currentMonth === new Date().getMonth();
-
-  document.getElementById('summary').innerHTML = `
-    <span class="stat"><strong>${state.members.length}</strong> members</span>
-    <span class="stat"><strong>${total}</strong> leave days this month</span>
-    ${totals.annual  ? `<span class="stat"><strong>${totals.annual}</strong> annual</span>`  : ''}
-    ${totals.sick    ? `<span class="stat"><strong>${totals.sick}</strong> sick</span>`      : ''}
-    ${totals.public  ? `<span class="stat"><strong>${totals.public}</strong> public hols</span>` : ''}
-    ${totals.other   ? `<span class="stat"><strong>${totals.other}</strong> other</span>`   : ''}
-    ${isNow && todayNames.length ? `<span class="stat stat-today" style="margin-left:auto">
-      On leave today: <strong>${todayNames.join(', ')}</strong></span>` : ''}
+  const total=Object.values(tot).reduce((a,b)=>a+b,0);
+  const isNow=curY===now.getFullYear()&&curM===now.getMonth();
+  document.getElementById('calSummary').innerHTML=`
+    <strong>${state.members.length}</strong> members &nbsp;·&nbsp;
+    <strong>${total}</strong> leave days this month
+    ${tot.annual?`&nbsp;·&nbsp;<strong>${tot.annual}</strong> annual`:''}
+    ${tot.sick?`&nbsp;·&nbsp;<strong>${tot.sick}</strong> sick`:''}
+    ${tot.public?`&nbsp;·&nbsp;<strong>${tot.public}</strong> public holiday`:''}
+    ${isNow&&todayNames.length?`&nbsp;·&nbsp;<span style="color:#8b1a24;font-weight:700">On leave today: ${todayNames.join(', ')}</span>`:''}
   `;
 }
 
-function makeTh(text, cls) {
-  const th = document.createElement('th');
-  th.textContent = text;
-  if (cls) th.className = cls;
-  return th;
+function wdBetween(s,e){ let c=0,d=new Date(s); while(d<=e){if(d.getDay()!==0&&d.getDay()!==6)c++;d.setDate(d.getDate()+1);} return c; }
+function isWeD(d){return d.getDay()===0||d.getDay()===6;}
+function getSprintDates(){
+  const c=state.config; if(!c.sprintStart)return[];
+  const sp=[];let s=new Date(c.sprintStart);
+  for(let i=0;i<(c.numSprints||4);i++){
+    const e=new Date(s);e.setDate(e.getDate()+(c.sprintWeeks||3)*7-1);
+    sp.push({num:i+1,start:new Date(s),end:new Date(e)});
+    s.setDate(s.getDate()+(c.sprintWeeks||3)*7);
+  }
+  return sp;
 }
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function leaveInSprint(member,ss,se){
+  const r={annual:0,sick:0,public:0,other:0,total:0};
+  Object.entries(member.leaves||{}).forEach(([k,t])=>{
+    const[y,m,d]=k.split('-').map(Number); const dt=new Date(y,m-1,d);
+    if(dt>=ss&&dt<=se&&!isWeD(dt)){r[t]=(r[t]||0)+1;r.total++;}
+  });
+  return r;
 }
+function defaultCap(wd){ const c=state.config; if(c.capUnit==='hours')return wd*(c.hoursPerDay||8); if(c.capUnit==='days')return wd; return wd*(c.hoursPerDay||8); }
+
+function renderSprints(){
+  const c=state.config;
+  document.getElementById('sprintMetaLbl').textContent=
+    `${c.projectName||'Project'} · ${c.sprintWeeks||3}-week sprints · Capacity in ${c.capUnit||'hours'}`;
+  const list=document.getElementById('sprintsList'); list.innerHTML='';
+  const sprints=getSprintDates();
+  if(!sprints.length){
+    list.innerHTML=`<div class="no-sprint-msg">No sprints configured yet.<br>Go to <strong>Configuration</strong> to set a sprint start date and length.</div>`;
+    return;
+  }
+  sprints.forEach(s=>{
+    const wd=wdBetween(s.start,s.end);
+    const baseCap=defaultCap(wd);
+    const planned=state[`sprint_${s.num}_planned`]||0;
+    const fmt=n=>c.capUnit==='hours'?`${n}h`:c.capUnit==='days'?`${n}d`:`${n}pt`;
+    let totalAvail=0,totalLeaveImpact=0;
+    const memberRows=[];
+    state.members.forEach(m=>{
+      const lv=leaveInSprint(m,s.start,s.end);
+      const mBase=m.capacity!=null?m.capacity:baseCap;
+      let lvCap=c.capUnit==='days'?lv.total:lv.total*(c.hoursPerDay||8);
+      const avail=Math.max(0,mBase-lvCap);
+      totalAvail+=avail; totalLeaveImpact+=lvCap;
+      if(lv.total>0)memberRows.push({name:m.name,lv,avail});
+    });
+    const pct=planned>0?Math.min(100,Math.round(totalAvail/planned*100)):0;
+    const barCls=pct>=90?'red':pct>=70?'amber':'';
+    const statCls=planned>0?(totalAvail<planned?'red':totalAvail<planned*1.1?'amber':'green'):'';
+    const surplus=totalAvail-planned;
+    const card=document.createElement('div'); card.className='sprint-card';
+    card.innerHTML=`
+      <div class="sprint-card-top">
+        <div class="sprint-num-badge">Sprint ${s.num}</div>
+        <div class="sprint-date-range">${fmtD(s.start)} – ${fmtD(s.end)} <span>· ${wd} working days</span></div>
+        <div class="sprint-planned-area">
+          <span class="sprint-planned-lbl">Planned Work:</span>
+          <input class="sprint-planned-inp" type="number" min="0" value="${planned}" placeholder="0" onchange="setPlanned(${s.num},this.value)">
+          <span class="sprint-unit-lbl">${c.capUnit}</span>
+        </div>
+      </div>
+      <div class="sprint-card-body">
+        <div class="cap-overview">
+          <div class="cap-stat ${statCls}">
+            <div class="val">${fmt(Math.round(totalAvail))}</div>
+            <div class="lbl">Available Capacity</div>
+          </div>
+          ${planned>0?`
+          <div class="cap-stat">
+            <div class="val" style="color:var(--text-muted)">${fmt(planned)}</div>
+            <div class="lbl">Planned Work</div>
+          </div>
+          <div class="cap-stat ${surplus>=0?'green':'red'}">
+            <div class="val">${surplus>=0?'+':''}${fmt(Math.round(surplus))}</div>
+            <div class="lbl">${surplus>=0?'Surplus':'Deficit'}</div>
+          </div>`:''}
+          <div class="cap-stat">
+            <div class="val" style="color:var(--text-muted);font-size:20px">${fmt(Math.round(totalLeaveImpact))}</div>
+            <div class="lbl">Leave Impact</div>
+          </div>
+        </div>
+        ${planned>0?`
+        <div class="cap-bar-area">
+          <div class="cap-bar-lbls"><span>Capacity Utilisation</span><span>${pct}%</span></div>
+          <div class="cap-bar-track"><div class="cap-bar-fill ${barCls}" style="width:${pct}%"></div></div>
+        </div>`:''}
+        <div class="leave-section-title">Leave in this sprint</div>
+        <div class="leave-rows">
+          ${memberRows.length===0
+            ?`<div class="no-leave">✓ No leave recorded for this sprint</div>`
+            :memberRows.map(r=>`
+              <div class="leave-row">
+                <span class="leave-row-name">${esc(r.name)}</span>
+                <div class="leave-tags">
+                  ${r.lv.annual?`<span class="leave-tag tag-annual">${r.lv.annual}d Annual</span>`:''}
+                  ${r.lv.sick?`<span class="leave-tag tag-sick">${r.lv.sick}d Sick</span>`:''}
+                  ${r.lv.public?`<span class="leave-tag tag-public">${r.lv.public}d Public Hol</span>`:''}
+                  ${r.lv.other?`<span class="leave-tag tag-other">${r.lv.other}d Other</span>`:''}
+                </div>
+                <span class="leave-row-avail">${fmt(Math.round(r.avail))} available</span>
+              </div>`).join('')}
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+function setPlanned(n,v){ state[`sprint_${n}_planned`]=parseFloat(v)||0; sched(); setTimeout(renderSprints,100); }
+
+function populateCfgForm(){
+  const c=state.config||{};
+  document.getElementById('cfName').value=c.projectName||'';
+  document.getElementById('cfWeeks').value=c.sprintWeeks||3;
+  document.getElementById('cfStart').value=c.sprintStart||'';
+  document.getElementById('cfCount').value=c.numSprints||4;
+  document.getElementById('cfUnit').value=c.capUnit||'hours';
+  document.getElementById('cfHpd').value=c.hoursPerDay||8;
+}
+function saveConfig(){
+  state.config={
+    projectName:document.getElementById('cfName').value.trim()||'',
+    sprintWeeks:parseInt(document.getElementById('cfWeeks').value)||3,
+    sprintStart:document.getElementById('cfStart').value||null,
+    numSprints:parseInt(document.getElementById('cfCount').value)||4,
+    capUnit:document.getElementById('cfUnit').value||'hours',
+    hoursPerDay:parseInt(document.getElementById('cfHpd').value)||8,
+  };
+  sched(); const el=document.getElementById('cfgOk');el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000);
+}
+function renderCapBody(){
+  const tb=document.getElementById('capBody'); tb.innerHTML='';
+  if(!state.members.length){ tb.innerHTML=`<tr><td colspan="2" style="color:var(--text-muted);font-size:12px;padding:12px 8px">No members added yet</td></tr>`; return; }
+  state.members.forEach((m,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(m.name)}</td>
+      <td><input class="cap-inp" type="number" min="0" placeholder="default" value="${m.capacity!=null?m.capacity:''}" onchange="setMCap(${i},this.value)">
+      <span style="font-size:11px;color:var(--text-muted);margin-left:6px">${state.config?.capUnit||'hrs'}</span></td>`;
+    tb.appendChild(tr);
+  });
+}
+function setMCap(i,v){ state.members[i].capacity=v===''?null:parseFloat(v); sched(); }
+
+function fmtD(d){return`${String(d.getDate()).padStart(2,'0')} ${MONTHS[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;}
+function mTh(t,c){const h=document.createElement('th');h.textContent=t;if(c)h.className=c;return h;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 </script>
 </body>
 </html>
