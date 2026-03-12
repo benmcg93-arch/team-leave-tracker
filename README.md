@@ -1,6 +1,8 @@
-# OSF Digital — Sprint & Leave Planner
+# OSF Digital — Sprint Capacity Planner
 
-A lightweight, zero-dependency team leave tracker and sprint capacity planner built for OSF Digital delivery teams. Leave is entered manually against a calendar and the app automatically calculates available capacity across configured sprints.
+A lightweight, zero-dependency sprint capacity planner built for OSF Digital delivery teams. It bridges the gap between **PSA** (the team's source of truth for leave and resource allocation) and **Jira** (sprint planning), giving delivery leads a fast, sprint-aware view of available capacity.
+
+> **How it fits in:** PSA tracks official leave (fed from Zoho) and project-level resource allocation by week. Jira manages sprint tickets and story points. Neither tool answers "how much capacity does this team actually have across sprint boundaries, accounting for leave?" — that's what this tool does.
 
 ---
 
@@ -12,7 +14,7 @@ The app stores all data as a single JSON file in a GitHub repository of your cho
 1. Create a GitHub Personal Access Token (PAT) with `repo` scope
 2. Create a repo (or use an existing one) to store the data file
 3. Open the app and enter your PAT, repo path (`owner/repo`), and branch
-4. Start adding team members and marking leave
+4. Configure your sprints and add team members
 
 ---
 
@@ -35,24 +37,23 @@ The app stores all data as a single JSON file in a GitHub repository of your cho
 
 ### 🗓 Upcoming
 
-#### Zoho Leave Integration (Sync)
-Automatically pull **approved leave** from Zoho People into the calendar, removing the need for double-entry. Leave approved by a manager in Zoho would sync into the planner on a daily schedule (via GitHub Actions — no infrastructure changes required to the app itself).
+#### PSA / Zoho Leave Sync
+Pull **approved leave** directly from PSA (which is already fed by Zoho People) into the capacity planner, eliminating double-entry. PSA is the team's source of truth for leave — this sync would make that data available to sprint planners automatically.
 
-- Requires a Zoho OAuth service account and a leave-type mapping (e.g. "Casual Leave" → Annual, "Medical Leave" → Sick)
-- Sync would run on a schedule and commit updated JSON to the repo
+- Triggered on a schedule (e.g. daily via GitHub Actions — no infrastructure changes required)
+- Leave type mapping: PSA/Zoho categories → Annual, Sick, Public Holiday, Other
 - The app picks up changes on next load with no code changes
 
-#### Manual Planning Leave Type
-A dedicated **"Planned"** leave type (distinct from approved leave types) so sprint planners can model anticipated or unconfirmed absence without it being treated as authoritative data. This is important because:
-- Zoho only reflects *approved* leave — planners often need to account for requests not yet approved
+#### Planned Leave Type
+A dedicated **"Planned"** leave type (distinct from PSA-approved leave) so sprint planners can model anticipated or unconfirmed absence without overwriting official data. Important because:
+- PSA/Zoho only reflects *approved* leave — planners often need to account for requests not yet approved
 - Teams want to run "what if" scenarios (e.g. "if Alice takes that week, what's our capacity?")
-- Planned entries would be visually distinct and excluded from Zoho sync overwrites
+- Planned entries are visually distinct and excluded from any PSA sync overwrites
 
-These two features are designed to work together: Zoho sync populates approved leave automatically, and the Planned type preserves manual planning capability alongside it.
+These two features are designed to work together: PSA sync populates approved leave automatically, and the Planned type preserves manual planning capability alongside it.
 
 #### Other Candidates
 - iCal / Google Calendar export of leave per member
-- Public holiday auto-population by country/region
 - Slack or Teams notification when capacity drops below a threshold
 
 ---
